@@ -1,6 +1,6 @@
-# Complete User Prompts & Chat History
+# Complete User Prompts & Chat History (`user_prompts.md`)
 
-This document contains the chronological record of all user prompts, instructions, and feature requests provided to the AI assistant to build, refactor, optimize, verify, and deploy the **AI Technical Interviewer Agent** project.
+This document contains the complete, chronological record of all user prompts, instructions, error reports, and feature requests provided to the AI assistant to build, refactor, optimize, verify, document, debug, and deploy the **AI Technical Interviewer Agent / Catalyst** application.
 
 ---
 
@@ -60,3 +60,56 @@ This document contains the chronological record of all user prompts, instruction
 
 ### Prompt 15: Chat History File Request
 > "just give me file of all the chats i used this project to build it not technical prompts"
+
+---
+
+## 4. Implementation Plan Audit & Meta-Documentation
+
+### Prompt 16: Implementation Plan Audit & Upgrade
+> "analyze the implementation plan for the improvement of the application and improve on the given implementation plan"
+
+### Prompt 17: Past Prompts Analysis Request
+> "analyze all the past conversation about my prompts in a prompt.md make sure to include all the prompts by me in all the past conversation"
+
+### Prompt 18: Prompt Files Consolidation Request
+> "now combine the files of prompt.md and prompts.md into a single file called PROMPTS.md"
+
+---
+
+## 5. Render Deployment, Debugging & Application Overview
+
+### Prompt 19: Render Deployment Steps Request
+> "now analyze the project and give me the complete steps to deploy it on render"
+
+### Prompt 20: TypeScript Render Build Error Debugging
+> "2026-08-08T18:43:29.230216573Z src/components/RadarChart.tsx(84,22): error TS7006: Parameter 'v' implicitly has an 'any' type.
+> 2026-08-08T18:43:29.2303245Z src/components/Toast.tsx(1,46): error TS7016: Could not find a declaration file for module 'react'.
+> ... got this log when deploying"
+
+### Prompt 21: Node Module Runtime Error Debugging
+> "2026-08-08T18:47:37.714591917Z Error: Cannot find module '/opt/render/project/src/backend/dist/index.js'
+> ... code: 'MODULE_NOT_FOUND'"
+
+### Prompt 22: Project Description Request
+> "give me a short description about this project"
+
+### Prompt 23: API Verification & Zod Schema Output Debugging
+> "https://catalyst-xnx4.onrender.com/api/interview
+> {
+>     "error": "Invalid request format",
+>     "details": [
+>         {
+>             "code": "invalid_type",
+>             "expected": "string",
+>             "received": "undefined",
+>             "path": [
+>                 "sessionId"
+>             ],
+>             "message": "Required"
+>         }
+>     ]
+> }
+> got this output when putting a post req on the above url"
+
+### Prompt 24: Complete User Prompts Update Request
+> "add my complete prompts in the format of user_prompts.md from all the past conversation including this about this application"
