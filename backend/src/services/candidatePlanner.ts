@@ -3,6 +3,7 @@ import path from 'path';
 import { CandidateProfile, CurriculumData, CurriculumDay } from '../types';
 
 let cachedCurriculum: CurriculumData | null = null;
+let cachedDayMap: Map<number, CurriculumDay> | null = null;
 
 export function loadCurriculum(): CurriculumData {
   if (cachedCurriculum) return cachedCurriculum;
@@ -30,12 +31,14 @@ export function loadCurriculum(): CurriculumData {
 }
 
 export function getCurriculumDayMap(): Map<number, CurriculumDay> {
+  if (cachedDayMap) return cachedDayMap;
   const curriculum = loadCurriculum();
   const map = new Map<number, CurriculumDay>();
   for (const d of curriculum.days) {
     map.set(d.day, d);
   }
-  return map;
+  cachedDayMap = map;
+  return cachedDayMap;
 }
 
 export function planCandidateInterview(candidate: CandidateProfile): {

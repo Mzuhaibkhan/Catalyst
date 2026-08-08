@@ -82,11 +82,13 @@ export async function processInterviewTurn(
 
   session.coveredDays.add(targetDayNumber);
 
-  // Adaptive follow-up logic based on last evaluation score
-  // Score <= 2: simplify & clarify, Score 3-4: deeper follow-up, Score 5: advance to next topic
+  // Adaptive follow-up logic based on evaluation scores
+  // Score <= 2: candidate struggled — ask a simpler follow-up to clarify
+  // Score 3: partial understanding — probe deeper on same topic
+  // Score >= 4: demonstrated mastery — advance to next topic
   const lastInterviewerTurn = [...session.history].reverse().find(t => t.speaker === 'interviewer' && t.evaluation);
   const lastScore = lastInterviewerTurn?.evaluation?.score ?? 4;
-  const isFollowUp = session.questionCount > 0 && (lastScore <= 4 && session.questionCount % 2 === 1);
+  const isFollowUp = session.questionCount > 0 && lastScore <= 3;
 
   // 4. Generate Interviewer response using Multi-LLM Router
   const trimmedHistory = session.history.slice(-10);

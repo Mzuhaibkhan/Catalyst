@@ -226,44 +226,60 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
 
           {/* Candidate Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-            {candidates.map((c: any, index: number) => (
-              <div key={c.member.name} className="juno-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span className="juno-tag" style={{ background: index === 0 ? 'var(--accent-1)' : index === 1 ? 'var(--accent-2)' : 'var(--accent-3)' }}>
-                      {c.member.role}
-                    </span>
-                    <span className="juno-mono" style={{ color: 'var(--base-muted)' }}>0{index + 1}</span>
-                  </div>
+            {candidates.map((c: any, index: number) => {
+              const accentColors = ['var(--accent-1)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-green)'];
+              const passedMissions = c.missions?.filter((m: any) => m.passed) || [];
+              const skippedMissions = c.missions?.filter((m: any) => m.skipped) || [];
+              const firstTryRate = c.signals?.missionsFirstTry && c.signals?.missionsCompleted
+                ? Math.round((c.signals.missionsFirstTry / c.signals.missionsCompleted) * 100)
+                : 0;
 
-                  <h3 style={{ fontSize: '2.4rem', marginBottom: '0.5rem' }}>{c.member.name}</h3>
-                  <p className="juno-mono" style={{ color: 'var(--base-secondary-dark)', marginBottom: '1rem' }}>
-                    Experience: {c.experienceYears} Years // Level: {c.level}
-                  </p>
-
-                  <p style={{ color: 'var(--base-muted)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                    {c.summary}
-                  </p>
-
-                  {/* Skills Pills */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.5rem' }}>
-                    {c.skills?.map((sk: string) => (
-                      <span key={sk} style={{ background: 'var(--base-200)', border: '1px solid var(--border-subtle)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontFamily: 'DM Mono' }}>
-                        {sk}
+              return (
+                <div key={c.member.name} className="juno-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <span className="juno-tag" style={{ background: accentColors[index % accentColors.length] }}>
+                        {c.member.jobRole}
                       </span>
-                    ))}
-                  </div>
-                </div>
+                      <span className="juno-mono" style={{ color: 'var(--base-muted)' }}>{String(index + 1).padStart(2, '0')}</span>
+                    </div>
 
-                <button
-                  onClick={() => onStartConsole(c.member.name)}
-                  className="juno-btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
-                  START INTERVIEW WITH {c.member.name.split(' ')[0].toUpperCase()}
-                </button>
-              </div>
-            ))}
+                    <h3 style={{ fontSize: '2.4rem', marginBottom: '0.5rem' }}>{c.member.name}</h3>
+                    <p className="juno-mono" style={{ color: 'var(--base-secondary-dark)', marginBottom: '1rem' }}>
+                      {c.member.yearsExperience} Years Experience // {c.member.education}
+                    </p>
+
+                    <p style={{ color: 'var(--base-muted)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                      Completed {passedMissions.length} missions across the AI Cohort with a {firstTryRate}% first-try pass rate.
+                      {skippedMissions.length > 0 && ` Skipped ${skippedMissions.length} topic${skippedMissions.length > 1 ? 's' : ''}.`}
+                      {' '}Committed for {c.signals?.commitDays || 0} out of 31 days.
+                    </p>
+
+                    {/* Mission Topic Pills — show top completed missions */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.5rem' }}>
+                      {passedMissions.slice(0, 5).map((m: any) => (
+                        <span key={m.day} style={{ background: 'var(--base-200)', border: '1px solid var(--border-subtle)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontFamily: 'DM Mono' }}>
+                          Day {m.day}
+                        </span>
+                      ))}
+                      {passedMissions.length > 5 && (
+                        <span style={{ background: 'var(--base-200)', border: '1px solid var(--border-subtle)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontFamily: 'DM Mono', color: 'var(--base-muted)' }}>
+                          +{passedMissions.length - 5} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onStartConsole(c.member.name)}
+                    className="juno-btn-secondary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    START INTERVIEW WITH {c.member.name.split(' ')[0].toUpperCase()}
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
         </div>

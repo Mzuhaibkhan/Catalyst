@@ -67,10 +67,15 @@ export async function handleInterviewRequest(req: Request, res: Response): Promi
     res.json(turnResponse);
   } catch (error: any) {
     console.error('Error handling /api/interview request:', error);
-    res.status(500).json({
-      reply: 'An unexpected technical issue occurred during the interview turn.',
+    
+    // Return generic error to client — never leak internal details
+    const isRateLimit = error.status === 429 || String(error.message).includes('429');
+    res.status(isRateLimit ? 429 : 500).json({
+      reply: isRateLimit
+        ? 'The interview system is currently experiencing high demand. Please try again in a moment.'
+        : 'An unexpected technical issue occurred during the interview turn. Please try again.',
       done: false,
-      error: error.message || 'Internal Server Error'
+      error: isRateLimit ? 'Rate limit exceeded' : 'Internal server error'
     });
   }
 }
