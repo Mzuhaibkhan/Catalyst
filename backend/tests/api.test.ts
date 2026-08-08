@@ -1,6 +1,6 @@
 import { sessionStore } from '../src/services/sessionStore';
 import { processInterviewTurn } from '../src/services/interviewerAgent';
-import candidatesData from '../../Interviewer/candidates.json';
+import candidatesData from '../../candidates.json';
 
 async function runEndToEndTest() {
   console.log('🧪 Starting AI Technical Interviewer E2E Test Suite...\n');
