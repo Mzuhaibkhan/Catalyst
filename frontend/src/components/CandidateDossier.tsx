@@ -1,7 +1,8 @@
 import React from 'react';
 import { CandidateProfile } from '../services/api';
 import candidatesData from '../../../candidates.json';
-import { User, Award, CheckCircle2, AlertCircle, Layers } from 'lucide-react';
+import { User, Award } from 'lucide-react';
+import { ProgressRing } from './ProgressRing';
 
 interface CandidateDossierProps {
   selectedCandidate: CandidateProfile;
@@ -65,7 +66,7 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
         <p style={{ color: 'var(--base-text)', fontSize: '0.95rem', fontWeight: 500 }}>
           {selectedCandidate.member.jobRole} · {selectedCandidate.member.education}
         </p>
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
           <span className="pill-badge" style={{ color: 'var(--accent-3)' }}>
             <Award size={12} /> {selectedCandidate.signals.missionsCompleted} MISSIONS COMPLETED
           </span>
@@ -75,33 +76,34 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
         </div>
       </div>
 
-      {/* Interview Requirements Progress Gauges */}
+      {/* Interview Progress Rings */}
       <div>
-        <span className="mono" style={{ color: 'var(--base-muted)', display: 'block', marginBottom: '0.5rem' }}>
+        <span className="mono" style={{ color: 'var(--base-muted)', display: 'block', marginBottom: '0.75rem' }}>
           SPEC COMPLIANCE METRICS
         </span>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {/* Question Count Gauge */}
-          <div style={{ background: 'var(--base-200)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {questionCount >= 8 ? <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} /> : <AlertCircle size={16} style={{ color: 'var(--accent-2)' }} />}
-              <span className="mono" style={{ fontSize: '0.8rem' }}>QUESTIONS ASKED</span>
-            </div>
-            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: questionCount >= 8 ? 'var(--accent-green)' : 'var(--base-text)' }}>
-              {questionCount} / 8 MIN
-            </span>
-          </div>
-
-          {/* Curriculum Days Gauge */}
-          <div style={{ background: 'var(--base-200)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Layers size={16} style={{ color: 'var(--accent-1)' }} />
-              <span className="mono" style={{ fontSize: '0.8rem' }}>CURRICULUM DAYS COVERED</span>
-            </div>
-            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: coveredDaysCount >= 4 ? 'var(--accent-green)' : 'var(--base-text)' }}>
-              {coveredDaysCount} / 4 MIN
-            </span>
-          </div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '2rem',
+          padding: '1rem 0',
+          background: 'var(--base-200)',
+          borderRadius: '8px',
+          border: '1px solid var(--border-subtle)'
+        }}>
+          <ProgressRing
+            value={questionCount}
+            max={8}
+            color={questionCount >= 8 ? 'var(--accent-green)' : 'var(--accent-1)'}
+            label="QUESTIONS"
+            size={90}
+          />
+          <ProgressRing
+            value={coveredDaysCount}
+            max={4}
+            color={coveredDaysCount >= 4 ? 'var(--accent-green)' : 'var(--accent-3)'}
+            label="DAYS COVERED"
+            size={90}
+          />
         </div>
       </div>
 

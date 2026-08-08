@@ -28,10 +28,16 @@ export interface InterviewFeedback {
   next: string[];
 }
 
+export interface TurnEvaluation {
+  score: number;
+  notes: string;
+}
+
 export interface InterviewResponse {
   reply: string;
   done: boolean;
   feedback?: InterviewFeedback;
+  evaluation?: TurnEvaluation;
   metrics?: {
     latencyMs: number;
     provider: string;

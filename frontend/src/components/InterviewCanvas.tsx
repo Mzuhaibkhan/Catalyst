@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Play, RefreshCw, Volume2, Bot, User } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Play, RefreshCw, Bot, User, Mic, MicOff, Download } from 'lucide-react';
+import { TurnEvaluation } from '../services/api';
 
 export interface TurnMessage {
   speaker: 'interviewer' | 'candidate';
@@ -7,6 +8,7 @@ export interface TurnMessage {
   timestamp: string;
   provider?: string;
   latencyMs?: number;
+  evaluation?: TurnEvaluation;
 }
 
 interface InterviewCanvasProps {
@@ -29,11 +31,22 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
   onResetInterview
 }) => {
   const [inputText, setInputText] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history, isLoading]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + 'px';
+    }
+  }, [inputText]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +54,69 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
     onSendAnswer(inputText.trim());
     setInputText('');
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  // Voice input using Web Speech API
+  const toggleVoiceInput = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return; // Silently fail if not supported
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setInputText(transcript);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  }, [isListening]);
+
+  const handleExportTranscript = () => {
+    const text = history.map(msg => {
+      const prefix = msg.speaker === 'interviewer' ? '🤖 INTERVIEWER' : '👤 CANDIDATE';
+      return `[${msg.timestamp}] ${prefix}:\n${msg.text}\n`;
+    }).join('\n');
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interview-transcript-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getScoreClass = (score: number) => `score-${Math.min(Math.max(Math.round(score), 1), 5)}`;
 
   return (
     <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', height: '100%', minHeight: '650px' }}>
@@ -66,24 +142,46 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
           )}
         </div>
 
-        <button
-          onClick={onResetInterview}
-          style={{
-            background: 'transparent',
-            color: 'var(--base-muted)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '6px',
-            padding: '0.4rem 0.8rem',
-            fontFamily: 'DM Mono, monospace',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          <RefreshCw size={12} /> RESET SESSION
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {isStarted && history.length > 0 && (
+            <button
+              onClick={handleExportTranscript}
+              style={{
+                background: 'transparent',
+                color: 'var(--base-muted)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
+                padding: '0.4rem 0.8rem',
+                fontFamily: 'DM Mono, monospace',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Download size={12} /> EXPORT
+            </button>
+          )}
+          <button
+            onClick={onResetInterview}
+            style={{
+              background: 'transparent',
+              color: 'var(--base-muted)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '6px',
+              padding: '0.4rem 0.8rem',
+              fontFamily: 'DM Mono, monospace',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <RefreshCw size={12} /> RESET SESSION
+          </button>
+        </div>
       </div>
 
       {/* Chat Messages Stream */}
@@ -120,81 +218,141 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
                 boxShadow: '0 0 20px rgba(177, 193, 239, 0.3)'
               }}
             >
-              <Play size={20} fill="#0a0a0a" /> INITIALIZE SESSION (POST /api/interview)
+              <Play size={20} fill="#0a0a0a" /> INITIALIZE SESSION
             </button>
+            <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--base-muted)' }}>
+              POST /api/interview · CTRL+ENTER
+            </span>
           </div>
         ) : (
-          history.map((msg, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                gap: '1rem',
-                alignSelf: msg.speaker === 'interviewer' ? 'flex-start' : 'flex-end',
-                maxWidth: '85%'
-              }}
-            >
-              {msg.speaker === 'interviewer' && (
+          <>
+            {history.map((msg, idx) => (
+              <div
+                key={idx}
+                className="message-enter"
+                style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  alignSelf: msg.speaker === 'interviewer' ? 'flex-start' : 'flex-end',
+                  maxWidth: '85%'
+                }}
+              >
+                {msg.speaker === 'interviewer' && (
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(177, 193, 239, 0.15)', border: '1px solid var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Bot size={18} style={{ color: 'var(--accent-1)' }} />
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    background: msg.speaker === 'interviewer' ? 'var(--base-200)' : 'rgba(177, 193, 239, 0.1)',
+                    border: `1px solid ${msg.speaker === 'interviewer' ? 'var(--border-subtle)' : 'var(--accent-1)'}`,
+                    padding: '1rem 1.25rem',
+                    borderRadius: '12px',
+                    color: 'var(--base-text)',
+                    lineHeight: 1.6
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', gap: '0.75rem' }}>
+                    <span className="mono" style={{ fontSize: '0.75rem', fontWeight: 700, color: msg.speaker === 'interviewer' ? 'var(--accent-1)' : 'var(--accent-green)' }}>
+                      {msg.speaker.toUpperCase()}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {msg.evaluation && (
+                        <span className={`score-badge ${getScoreClass(msg.evaluation.score)}`} title={msg.evaluation.notes}>
+                          {msg.evaluation.score}
+                        </span>
+                      )}
+                      {msg.provider && (
+                        <span className="mono" style={{ fontSize: '0.68rem', color: 'var(--base-muted)' }}>
+                          {msg.provider} · {msg.latencyMs}ms
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>{msg.text}</p>
+                </div>
+
+                {msg.speaker === 'candidate' && (
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(163, 230, 53, 0.15)', border: '1px solid var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <User size={18} style={{ color: 'var(--accent-green)' }} />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Typing indicator when loading */}
+            {isLoading && (
+              <div
+                className="message-enter"
+                style={{ display: 'flex', gap: '1rem', alignSelf: 'flex-start', maxWidth: '85%' }}
+              >
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(177, 193, 239, 0.15)', border: '1px solid var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Bot size={18} style={{ color: 'var(--accent-1)' }} />
                 </div>
-              )}
-
-              <div
-                style={{
-                  background: msg.speaker === 'interviewer' ? 'var(--base-200)' : 'rgba(177, 193, 239, 0.1)',
-                  border: `1px solid ${msg.speaker === 'interviewer' ? 'var(--border-subtle)' : 'var(--accent-1)'}`,
-                  padding: '1rem 1.25rem',
+                <div style={{
+                  background: 'var(--base-200)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: '12px',
-                  color: 'var(--base-text)',
-                  lineHeight: 1.6
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <span className="mono" style={{ fontSize: '0.75rem', fontWeight: 700, color: msg.speaker === 'interviewer' ? 'var(--accent-1)' : 'var(--accent-green)' }}>
-                    {msg.speaker.toUpperCase()}
+                  padding: '0.75rem 1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <div className="typing-indicator">
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                  </div>
+                  <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--base-muted)' }}>
+                    THINKING...
                   </span>
-                  {msg.provider && (
-                    <span className="mono" style={{ fontSize: '0.68rem', color: 'var(--base-muted)' }}>
-                      {msg.provider} · {msg.latencyMs}ms
-                    </span>
-                  )}
                 </div>
-                <p style={{ fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>{msg.text}</p>
               </div>
-
-              {msg.speaker === 'candidate' && (
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(163, 230, 53, 0.15)', border: '1px solid var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <User size={18} style={{ color: 'var(--accent-green)' }} />
-                </div>
-              )}
-            </div>
-          ))
+            )}
+          </>
         )}
         <div ref={chatEndRef} />
       </div>
 
       {/* Input Box */}
       {isStarted && !isComplete && (
-        <form onSubmit={handleSubmit} style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
-          <input
-            type="text"
+        <form onSubmit={handleSubmit} style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+          {/* Voice Input Button */}
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            className={isListening ? 'voice-pulse' : ''}
+            style={{
+              background: isListening ? 'rgba(242, 172, 172, 0.2)' : 'var(--base-200)',
+              color: isListening ? 'var(--accent-2)' : 'var(--base-muted)',
+              border: `1px solid ${isListening ? 'var(--accent-2)' : 'var(--border-subtle)'}`,
+              borderRadius: '8px',
+              padding: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              height: '48px',
+              width: '48px'
+            }}
+            title={isListening ? 'Stop listening' : 'Start voice input'}
+          >
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+
+          <textarea
+            ref={textareaRef}
+            className="chat-textarea"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type your technical response here..."
+            onKeyDown={handleKeyDown}
+            placeholder="Type your technical response... (Shift+Enter for new line)"
             disabled={isLoading}
-            style={{
-              flex: 1,
-              padding: '0.9rem 1.25rem',
-              borderRadius: '8px',
-              background: 'var(--base-200)',
-              color: 'var(--base-text)',
-              border: '1px solid var(--border-subtle)',
-              fontFamily: 'Host Grotesk, sans-serif',
-              fontSize: '1rem',
-              outline: 'none'
-            }}
+            rows={1}
           />
+
           <button
             type="submit"
             disabled={isLoading || !inputText.trim()}
@@ -210,7 +368,9 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
               cursor: isLoading || !inputText.trim() ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              height: '48px',
+              flexShrink: 0
             }}
           >
             <Send size={16} /> RESPOND

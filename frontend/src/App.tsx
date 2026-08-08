@@ -4,10 +4,12 @@ import { CandidateDossier } from './components/CandidateDossier';
 import { InterviewCanvas, TurnMessage } from './components/InterviewCanvas';
 import { FeedbackDashboard } from './components/FeedbackDashboard';
 import { ApiDebugger } from './components/ApiDebugger';
+import { ToastContainer, showToast } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { sendInterviewRequest, checkBackendHealth, CandidateProfile, InterviewFeedback } from './services/api';
 import candidatesData from '../../candidates.json';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const allCandidates = candidatesData.candidates as CandidateProfile[];
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile>(allCandidates[0]);
   const [sessionId, setSessionId] = useState<string>(`session-${Date.now()}`);
@@ -32,8 +34,24 @@ export const App: React.FC = () => {
   useEffect(() => {
     checkBackendHealth().then(res => {
       setServerStatus(res.status);
+      if (res.status === 'ok') {
+        showToast(`Backend online — ${res.availableProviders.length} LLM provider(s) available`, 'success');
+      } else {
+        showToast('Backend is offline. Make sure the server is running on port 3000.', 'error');
+      }
     });
   }, []);
+
+  // Keyboard shortcut: Ctrl+Enter to start interview
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'Enter' && !isStarted && !isLoading) {
+        handleStartInterview();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isStarted, isLoading, selectedCandidate, activeProvider]);
 
   const handleStartInterview = async () => {
     setIsLoading(true);
@@ -64,10 +82,13 @@ export const App: React.FC = () => {
         text: res.reply,
         timestamp: new Date().toLocaleTimeString(),
         provider: res.metrics?.provider,
-        latencyMs: res.metrics?.latencyMs
+        latencyMs: res.metrics?.latencyMs,
+        evaluation: res.evaluation
       }]);
+
+      showToast('Interview session initialized successfully', 'success');
     } catch (err: any) {
-      alert(`Error starting interview: ${err.message}`);
+      showToast(`Error starting interview: ${err.message}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +129,8 @@ export const App: React.FC = () => {
         text: res.reply,
         timestamp: new Date().toLocaleTimeString(),
         provider: res.metrics?.provider,
-        latencyMs: res.metrics?.latencyMs
+        latencyMs: res.metrics?.latencyMs,
+        evaluation: res.evaluation
       };
 
       setHistory(prev => [...prev, interviewerMsg]);
@@ -116,9 +138,10 @@ export const App: React.FC = () => {
       if (res.done && res.feedback) {
         setIsComplete(true);
         setFeedback(res.feedback);
+        showToast('Interview complete — evaluation ready', 'info');
       }
     } catch (err: any) {
-      alert(`Error sending answer: ${err.message}`);
+      showToast(`Error sending answer: ${err.message}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +155,7 @@ export const App: React.FC = () => {
     setCoveredDaysCount(0);
     setFeedback(null);
     setLatencyMs(null);
+    showToast('Session reset. Select a candidate and start a new interview.', 'info');
   };
 
   return (
@@ -143,7 +167,7 @@ export const App: React.FC = () => {
         serverStatus={serverStatus}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.5rem' }}>
+      <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.5rem' }}>
         {/* Left Panel: Candidate Dossier & Spec Progress */}
         <CandidateDossier
           selectedCandidate={selectedCandidate}
@@ -159,6 +183,7 @@ export const App: React.FC = () => {
             <FeedbackDashboard
               feedback={feedback}
               candidateName={selectedCandidate.member.name}
+              history={history}
             />
           ) : (
             <InterviewCanvas
@@ -177,5 +202,14 @@ export const App: React.FC = () => {
       {/* Technical REST API Payload Inspector */}
       <ApiDebugger lastPayload={lastPayload} lastResponse={lastResponse} />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <ToastContainer />
+      <AppContent />
+    </ErrorBoundary>
   );
 };

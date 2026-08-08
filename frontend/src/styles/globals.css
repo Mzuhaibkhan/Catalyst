@@ -106,3 +106,183 @@ h4 { font-size: 1.4rem; }
   font-family: "DM Mono", monospace;
   font-size: 0.75rem;
 }
+
+/* Typing Indicator — Pulsing Dots */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1rem 1.25rem;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-1);
+  animation: typing-pulse 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-pulse {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Toast Notification */
+.toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast {
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  font-family: "DM Mono", monospace;
+  font-size: 0.82rem;
+  animation: toast-in 0.3s ease-out, toast-out 0.3s ease-in 4.7s forwards;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.toast-error {
+  background: rgba(242, 172, 172, 0.15);
+  border: 1px solid rgba(242, 172, 172, 0.4);
+  color: var(--accent-2);
+}
+
+.toast-success {
+  background: rgba(163, 230, 53, 0.12);
+  border: 1px solid rgba(163, 230, 53, 0.4);
+  color: var(--accent-green);
+}
+
+.toast-info {
+  background: rgba(177, 193, 239, 0.12);
+  border: 1px solid rgba(177, 193, 239, 0.4);
+  color: var(--accent-1);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(100px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100px); }
+}
+
+/* Score Badge */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.score-1, .score-2 {
+  background: rgba(242, 172, 172, 0.2);
+  color: var(--accent-2);
+  border: 1px solid rgba(242, 172, 172, 0.4);
+}
+.score-3 {
+  background: rgba(255, 221, 148, 0.2);
+  color: var(--accent-3);
+  border: 1px solid rgba(255, 221, 148, 0.4);
+}
+.score-4 {
+  background: rgba(177, 193, 239, 0.2);
+  color: var(--accent-1);
+  border: 1px solid rgba(177, 193, 239, 0.4);
+}
+.score-5 {
+  background: rgba(163, 230, 53, 0.2);
+  color: var(--accent-green);
+  border: 1px solid rgba(163, 230, 53, 0.4);
+}
+
+/* Fade-in animations for messages */
+.message-enter {
+  animation: message-slide-in 0.35s ease-out;
+}
+@keyframes message-slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress ring */
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Feedback panel transition */
+.feedback-enter {
+  animation: feedback-reveal 0.6s ease-out;
+}
+@keyframes feedback-reveal {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Textarea auto-resize styles */
+.chat-textarea {
+  flex: 1;
+  padding: 0.9rem 1.25rem;
+  border-radius: 8px;
+  background: var(--base-200);
+  color: var(--base-text);
+  border: 1px solid var(--border-subtle);
+  font-family: "Host Grotesk", sans-serif;
+  font-size: 1rem;
+  outline: none;
+  resize: none;
+  min-height: 48px;
+  max-height: 160px;
+  line-height: 1.5;
+  transition: border-color 0.2s ease;
+}
+.chat-textarea:focus {
+  border-color: var(--accent-1);
+}
+.chat-textarea::placeholder {
+  color: var(--base-muted);
+}
+
+/* Voice recording pulse */
+.voice-pulse {
+  animation: voice-glow 1.5s ease-in-out infinite;
+}
+@keyframes voice-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 172, 172, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(242, 172, 172, 0); }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.8rem; }
+  .header-right {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+}
