@@ -14,18 +14,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
 
   return (
     <div style={{ color: 'var(--base-300)', paddingBottom: '3rem' }}>
-      
+
       {/* 1. HERO SECTION */}
       <section style={{ paddingTop: '2rem', paddingBottom: '4rem', borderBottom: '2px solid var(--base-300)' }}>
         <div className="juno-container">
-          
+
           {/* Top Symbol & Alchemy Badge */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
             <div className="juno-tag" style={{ background: 'var(--accent-1)' }}>
               <span>▶</span> AI INTERVIEW ENGINE
             </div>
             <div className="juno-tag" style={{ background: 'var(--accent-3)' }}>
-              <span>▶</span> JUNOWATTS EDITION
+              <span>▶</span> NEO EDITION
             </div>
             <div className="juno-tag" style={{ background: 'var(--base-200)' }}>
               <Activity size={13} color={serverStatus === 'ok' ? 'var(--accent-green)' : 'var(--accent-2)'} />
@@ -50,14 +50,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => onStartConsole()} 
+              <button
+                onClick={() => onStartConsole()}
                 className="juno-btn-primary"
               >
                 <Play size={20} fill="currentColor" /> LAUNCH CONSOLE
               </button>
-              <button 
-                onClick={onOpenPrivacy} 
+              <button
+                onClick={onOpenPrivacy}
                 className="juno-btn-secondary"
               >
                 <Shield size={18} /> PRIVACY DIRECTIVE
@@ -67,9 +67,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
 
           {/* Hero Card Stack (Inspired by Juno Watts Plan / Design / Develop cards) */}
           <div className="hero-card-stack">
-            
+
             {/* Card 01 */}
-            <div 
+            <div
               className="hero-stack-card"
               onMouseEnter={() => setActiveCardHover(1)}
               onMouseLeave={() => setActiveCardHover(null)}
@@ -91,7 +91,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
             </div>
 
             {/* Card 02 */}
-            <div 
+            <div
               className="hero-stack-card"
               onMouseEnter={() => setActiveCardHover(2)}
               onMouseLeave={() => setActiveCardHover(null)}
@@ -112,7 +112,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
             </div>
 
             {/* Card 03 */}
-            <div 
+            <div
               className="hero-stack-card"
               onMouseEnter={() => setActiveCardHover(3)}
               onMouseLeave={() => setActiveCardHover(null)}
@@ -140,7 +140,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
       {/* 2. FEATURE LEVEL-UP GRID SECTION */}
       <section style={{ padding: '5rem 0', borderBottom: '2px solid var(--base-300)', background: 'var(--base-200)' }}>
         <div className="juno-container">
-          
+
           <div style={{ marginBottom: '3.5rem' }}>
             <p className="juno-mono" style={{ color: 'var(--base-muted)', marginBottom: '0.5rem' }}>
               <span>▶</span> SYSTEM CAPABILITIES // SKILLSET
@@ -151,7 +151,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-            
+
             {/* Feature 1 */}
             <div className="juno-card">
               <div className="juno-tag" style={{ background: 'var(--accent-1)', marginBottom: '1rem' }}>
@@ -204,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
       {/* 3. CANDIDATE SELECTION SHOWCASE */}
       <section style={{ padding: '5rem 0' }}>
         <div className="juno-container">
-          
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '3.5rem' }}>
             <div>
               <p className="juno-mono" style={{ color: 'var(--base-muted)', marginBottom: '0.5rem' }}>
@@ -215,9 +215,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
               </h2>
             </div>
 
-            <button 
-              onClick={() => onStartConsole()} 
-              className="juno-btn-primary" 
+            <button
+              onClick={() => onStartConsole()}
+              className="juno-btn-primary"
               style={{ fontSize: '1rem' }}
             >
               LAUNCH INTERVIEW CONSOLE <ArrowRight size={18} />
@@ -255,7 +255,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => onStartConsole(c.member.name)}
                   className="juno-btn-secondary"
                   style={{ width: '100%', justifyContent: 'center' }}

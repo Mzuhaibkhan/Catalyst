@@ -116,11 +116,11 @@ export const Header: React.FC<HeaderProps> = ({
                 fontWeight: 600
               }}
             >
-              <option value="auto">Auto-Router (Fastest Tier)</option>
-              <option value="Groq">Groq (Llama-3.3 ~150ms)</option>
-              <option value="Gemini">Google Gemini 2.5 Flash</option>
-              <option value="OpenAI">OpenAI (GPT-4o-mini)</option>
-              <option value="Mock">Zero-Latency Mock (&lt;5ms)</option>
+              <option value="auto" style={{ background: '#ffffff', color: '#0a0a0a' }}>Auto-Router (Fastest Tier)</option>
+              <option value="Groq" style={{ background: '#ffffff', color: '#0a0a0a' }}>Groq (Llama-3.3 ~150ms)</option>
+              <option value="Gemini" style={{ background: '#ffffff', color: '#0a0a0a' }}>Google Gemini 2.5 Flash</option>
+              <option value="OpenAI" style={{ background: '#ffffff', color: '#0a0a0a' }}>OpenAI (GPT-4o-mini)</option>
+              <option value="Mock" style={{ background: '#ffffff', color: '#0a0a0a' }}>Zero-Latency Mock (&lt;5ms)</option>
             </select>
           </div>
 

@@ -267,6 +267,13 @@ h4 { font-size: 1.4rem; }
   color: var(--base-muted);
 }
 
+/* Global Select Dropdown Option High-Contrast Styles */
+select option {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 8px;
+}
+
 /* Voice recording pulse */
 .voice-pulse {
   animation: voice-glow 1.5s ease-in-out infinite;

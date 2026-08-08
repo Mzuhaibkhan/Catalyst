@@ -26,7 +26,7 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
       {/* Candidate Preset Selector */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <span className="mono" style={{ color: 'var(--base-muted)' }}>SELECT CANDIDATE PROFILE</span>
+          <span className="mono" style={{ color: '#b5b5b5', fontWeight: 600 }}>SELECT CANDIDATE PROFILE</span>
           <User size={16} style={{ color: 'var(--accent-1)' }} />
         </div>
         <select
@@ -40,9 +40,9 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
             width: '100%',
             padding: '0.75rem 1rem',
             borderRadius: '8px',
-            background: 'var(--base-200)',
-            color: 'var(--base-text)',
-            border: '1px solid var(--border-subtle)',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             fontFamily: 'Host Grotesk, sans-serif',
             fontSize: '1rem',
             fontWeight: 600,
@@ -51,7 +51,7 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
           }}
         >
           {allCandidates.map(c => (
-            <option key={c.member.id} value={c.member.id} style={{ background: '#1c1c1c' }}>
+            <option key={c.member.id} value={c.member.id} style={{ background: '#1a1a1a', color: '#ffffff' }}>
               {c.member.name} — {c.member.jobRole} ({c.member.yearsExperience} yrs exp)
             </option>
           ))}
@@ -78,7 +78,7 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
 
       {/* Interview Progress Rings */}
       <div>
-        <span className="mono" style={{ color: 'var(--base-muted)', display: 'block', marginBottom: '0.75rem' }}>
+        <span className="mono" style={{ color: '#b5b5b5', fontWeight: 600, display: 'block', marginBottom: '0.75rem' }}>
           SPEC COMPLIANCE METRICS
         </span>
         <div style={{
@@ -109,7 +109,7 @@ export const CandidateDossier: React.FC<CandidateDossierProps> = ({
 
       {/* Completed Missions Heatmap */}
       <div>
-        <span className="mono" style={{ color: 'var(--base-muted)', display: 'block', marginBottom: '0.5rem' }}>
+        <span className="mono" style={{ color: '#b5b5b5', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
           COHORT MISSION TIMELINE ({selectedCandidate.missions.length} MISSIONS)
         </span>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.4rem', maxHeight: '200px', overflowY: 'auto' }}>

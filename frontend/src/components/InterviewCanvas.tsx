@@ -192,10 +192,10 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
               <Bot size={32} style={{ color: 'var(--accent-1)' }} />
             </div>
             <div>
-              <h2 style={{ fontSize: '2.2rem', marginBottom: '0.5rem', color: 'var(--base-text)' }}>
+              <h2 style={{ fontSize: '2.2rem', marginBottom: '0.5rem', color: '#ffffff' }}>
                 READY TO BEGIN TECHNICAL INTERVIEW
               </h2>
-              <p style={{ color: 'var(--base-muted)', maxWidth: '480px', margin: '0 auto', fontSize: '0.95rem' }}>
+              <p style={{ color: '#c0c0c0', maxWidth: '480px', margin: '0 auto', fontSize: '0.95rem' }}>
                 The Interview Agent will analyze your candidate profile, plan a sequence across completed cohort missions, and conduct an adaptive multi-turn interview.
               </p>
             </div>
@@ -220,7 +220,7 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
             >
               <Play size={20} fill="#0a0a0a" /> INITIALIZE SESSION
             </button>
-            <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--base-muted)' }}>
+            <span className="mono" style={{ fontSize: '0.7rem', color: '#a0a0a0' }}>
               POST /api/interview · CTRL+ENTER
             </span>
           </div>

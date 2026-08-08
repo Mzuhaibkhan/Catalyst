@@ -49,8 +49,8 @@ export const ApiDebugger: React.FC<ApiDebuggerProps> = ({ lastPayload, lastRespo
               onClick={handleCopy}
               style={{
                 background: 'var(--base-300)',
-                color: 'var(--base-text)',
-                border: '1px solid var(--border-subtle)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 padding: '0.3rem 0.75rem',
                 borderRadius: '4px',
                 fontFamily: 'DM Mono, monospace',
