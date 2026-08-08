@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
+import { LandingPage } from './components/LandingPage';
+import { Footer } from './components/Footer';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { CandidateDossier } from './components/CandidateDossier';
 import { InterviewCanvas, TurnMessage } from './components/InterviewCanvas';
 import { FeedbackDashboard } from './components/FeedbackDashboard';
@@ -11,6 +14,9 @@ import candidatesData from '../../candidates.json';
 
 const AppContent: React.FC = () => {
   const allCandidates = candidatesData.candidates as CandidateProfile[];
+  const [activeView, setActiveView] = useState<'landing' | 'console'>('landing');
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
+
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile>(allCandidates[0]);
   const [sessionId, setSessionId] = useState<string>(`session-${Date.now()}`);
 
@@ -46,12 +52,26 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === 'Enter' && !isStarted && !isLoading) {
+        if (activeView === 'landing') {
+          setActiveView('console');
+        }
         handleStartInterview();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isStarted, isLoading, selectedCandidate, activeProvider]);
+  }, [isStarted, isLoading, selectedCandidate, activeProvider, activeView]);
+
+  const handleStartConsole = (candidateName?: string) => {
+    if (candidateName) {
+      const found = allCandidates.find(c => c.member.name.toLowerCase().includes(candidateName.toLowerCase()));
+      if (found) {
+        setSelectedCandidate(found);
+      }
+    }
+    setActiveView('console');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleStartInterview = async () => {
     setIsLoading(true);
@@ -97,7 +117,6 @@ const AppContent: React.FC = () => {
   const handleSendAnswer = async (answerText: string) => {
     setIsLoading(true);
 
-    // Add candidate response locally immediately
     const userMsg: TurnMessage = {
       speaker: 'candidate',
       text: answerText,
@@ -159,48 +178,79 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '1.5rem 2rem' }}>
-      <Header
-        activeProvider={activeProvider}
-        onProviderChange={setActiveProvider}
-        latencyMs={latencyMs}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--base-100)' }}>
+      
+      {/* Shell Container */}
+      <div style={{ maxWidth: '1800px', width: '100%', margin: '0 auto', padding: '1.5rem 2rem 0 2rem', flex: 1 }}>
+        <Header
+          activeView={activeView}
+          onViewChange={setActiveView}
+          activeProvider={activeProvider}
+          onProviderChange={setActiveProvider}
+          latencyMs={latencyMs}
+          serverStatus={serverStatus}
+          onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        />
+
+        {activeView === 'landing' ? (
+          <LandingPage
+            onStartConsole={handleStartConsole}
+            onOpenPrivacy={() => setIsPrivacyOpen(true)}
+            serverStatus={serverStatus}
+          />
+        ) : (
+          <div>
+            <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.5rem' }}>
+              {/* Left Panel: Candidate Dossier & Spec Progress */}
+              <CandidateDossier
+                selectedCandidate={selectedCandidate}
+                onSelectCandidate={setSelectedCandidate}
+                questionCount={questionCount}
+                coveredDaysCount={coveredDaysCount}
+                isInterviewStarted={isStarted}
+              />
+
+              {/* Right Panel: Interactive Canvas or Final Feedback */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {isComplete && feedback ? (
+                  <FeedbackDashboard
+                    feedback={feedback}
+                    candidateName={selectedCandidate.member.name}
+                    history={history}
+                  />
+                ) : (
+                  <InterviewCanvas
+                    history={history}
+                    isLoading={isLoading}
+                    isComplete={isComplete}
+                    isStarted={isStarted}
+                    onStartInterview={handleStartInterview}
+                    onSendAnswer={handleSendAnswer}
+                    onResetInterview={handleResetInterview}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Technical REST API Payload Inspector */}
+            <ApiDebugger lastPayload={lastPayload} lastResponse={lastResponse} />
+          </div>
+        )}
+      </div>
+
+      {/* Juno Watts Styled Footer */}
+      <Footer
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        onNavigateConsole={() => { setActiveView('console'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         serverStatus={serverStatus}
       />
 
-      <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.5rem' }}>
-        {/* Left Panel: Candidate Dossier & Spec Progress */}
-        <CandidateDossier
-          selectedCandidate={selectedCandidate}
-          onSelectCandidate={setSelectedCandidate}
-          questionCount={questionCount}
-          coveredDaysCount={coveredDaysCount}
-          isInterviewStarted={isStarted}
-        />
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+      />
 
-        {/* Right Panel: Interactive Canvas or Final Feedback */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {isComplete && feedback ? (
-            <FeedbackDashboard
-              feedback={feedback}
-              candidateName={selectedCandidate.member.name}
-              history={history}
-            />
-          ) : (
-            <InterviewCanvas
-              history={history}
-              isLoading={isLoading}
-              isComplete={isComplete}
-              isStarted={isStarted}
-              onStartInterview={handleStartInterview}
-              onSendAnswer={handleSendAnswer}
-              onResetInterview={handleResetInterview}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Technical REST API Payload Inspector */}
-      <ApiDebugger lastPayload={lastPayload} lastResponse={lastResponse} />
     </div>
   );
 };
