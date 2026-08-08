@@ -32,6 +32,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV CURRICULUM_PATH=/app/curriculum.json
 
 # Copy root dataset files
 COPY candidates.json ./candidates.json

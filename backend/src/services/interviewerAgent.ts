@@ -89,9 +89,11 @@ export async function processInterviewTurn(
   const isFollowUp = session.questionCount > 0 && (lastScore <= 4 && session.questionCount % 2 === 1);
 
   // 4. Generate Interviewer response using Multi-LLM Router
+  const trimmedHistory = session.history.slice(-10);
+  
   const turnResult = await llmRouter.generateTurn({
     candidate: session.candidate,
-    history: session.history,
+    history: trimmedHistory,
     currentDay: currentDayObj,
     questionCount: session.questionCount,
     isFollowUp,

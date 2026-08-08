@@ -9,7 +9,7 @@ import { FeedbackDashboard } from './components/FeedbackDashboard';
 import { ApiDebugger } from './components/ApiDebugger';
 import { ToastContainer, showToast } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { sendInterviewRequest, checkBackendHealth, CandidateProfile, InterviewFeedback } from './services/api';
+import { sendInterviewRequest, checkBackendHealth, abortCurrentRequest, CandidateProfile, InterviewFeedback } from './services/api';
 import candidatesData from '../../candidates.json';
 
 const AppContent: React.FC = () => {
@@ -74,6 +74,7 @@ const AppContent: React.FC = () => {
   };
 
   const handleStartInterview = async () => {
+    if (isLoading) return;
     setIsLoading(true);
     const newSessionId = `session-${Date.now()}`;
     setSessionId(newSessionId);
@@ -115,6 +116,7 @@ const AppContent: React.FC = () => {
   };
 
   const handleSendAnswer = async (answerText: string) => {
+    if (isLoading) return;
     setIsLoading(true);
 
     const userMsg: TurnMessage = {
@@ -167,6 +169,7 @@ const AppContent: React.FC = () => {
   };
 
   const handleResetInterview = () => {
+    abortCurrentRequest();
     setIsStarted(false);
     setIsComplete(false);
     setHistory([]);

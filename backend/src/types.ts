@@ -129,3 +129,11 @@ export interface ILLMProvider {
     }
   ): Promise<InterviewFeedback>;
 }
+
+export interface ProviderMetadata {
+  name: string;
+  availableKeys: number;
+  isHealthy: boolean;
+  lastError?: string;
+  lastErrorAt?: number;
+}

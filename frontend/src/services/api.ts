@@ -47,24 +47,47 @@ export interface InterviewResponse {
   error?: string;
 }
 
+let currentAbortController: AbortController | null = null;
+
+export function abortCurrentRequest() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+}
+
 export async function sendInterviewRequest(payload: {
   sessionId: string;
   candidate?: CandidateProfile;
   message?: string;
   provider?: string;
 }): Promise<InterviewResponse> {
-  const response = await fetch('/api/interview', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  abortCurrentRequest();
+  
+  const controller = new AbortController();
+  currentAbortController = controller;
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || `HTTP ${response.status}: Failed to execute interview API`);
+  try {
+    const response = await fetch('/api/interview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${response.status}: Failed to execute interview API`);
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeoutId);
+    if (currentAbortController === controller) {
+      currentAbortController = null;
+    }
   }
-
-  return await response.json();
 }
 
 export async function checkBackendHealth(): Promise<{ status: string; availableProviders: string[] }> {

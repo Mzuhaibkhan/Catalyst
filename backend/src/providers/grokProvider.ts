@@ -2,16 +2,19 @@ import { ILLMProvider, CandidateProfile, DialogueTurn, CurriculumDay, InterviewF
 import OpenAI from 'openai';
 import { KeyRotator } from './keyRotator';
 
-export class OpenAIProvider implements ILLMProvider {
-  public name = 'OpenAI (GPT-4o-mini)';
-  public readonly rotator = new KeyRotator('OPENAI_API_KEY');
+export class GrokProvider implements ILLMProvider {
+  public name = 'xAI Grok';
+  public readonly rotator = new KeyRotator('GROK_API_KEY');
 
   public isAvailable(): boolean {
     return this.rotator.isAvailable();
   }
 
   private getClient(): OpenAI {
-    return new OpenAI({ apiKey: this.rotator.getKey() });
+    return new OpenAI({
+      apiKey: this.rotator.getKey(),
+      baseURL: 'https://api.x.ai/v1'
+    });
   }
 
   public async generateTurnResponse(context: {
@@ -21,7 +24,7 @@ export class OpenAIProvider implements ILLMProvider {
     questionCount: number;
     isFollowUp: boolean;
   }): Promise<{ reply: string; score: number; notes: string }> {
-    if (!this.isAvailable()) throw new Error('No OpenAI keys available');
+    if (!this.isAvailable()) throw new Error('No Grok keys available');
 
     const prompt = `Conduct a technical interview for ${context.candidate.member.name}.
 Target Day: Day ${context.currentDay.day} - ${context.currentDay.title}
@@ -34,7 +37,7 @@ Format output as JSON: {"reply": "...", "score": 4, "notes": "..."}`;
 
     try {
       const completion = await this.getClient().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: process.env.GROK_MODEL || 'grok-3-mini',
         messages: [
           { role: 'system', content: 'You are an AI Technical Interviewer. Return JSON.' },
           { role: 'user', content: prompt }
@@ -48,13 +51,13 @@ Format output as JSON: {"reply": "...", "score": 4, "notes": "..."}`;
       try {
         parsed = JSON.parse(text);
       } catch {
-        console.warn('OpenAI returned malformed JSON for turn response, using fallback.');
+        console.warn('Grok returned malformed JSON for turn response, using fallback.');
       }
 
       return {
         reply: parsed.reply || `Tell me about your implementation on Day ${context.currentDay.day}.`,
         score: parsed.score || 4,
-        notes: parsed.notes || 'OpenAI response generated.'
+        notes: parsed.notes || 'Grok response generated.'
       };
     } catch (error: any) {
       if (error.status === 429 || error.status === 401 || error.status === 403 || error.message?.includes('429')) {
@@ -69,7 +72,7 @@ Format output as JSON: {"reply": "...", "score": 4, "notes": "..."}`;
     history: DialogueTurn[];
     coveredDays: CurriculumDay[];
   }): Promise<InterviewFeedback> {
-    if (!this.isAvailable()) throw new Error('No OpenAI keys available');
+    if (!this.isAvailable()) throw new Error('No Grok keys available');
 
     const prompt = `Provide interview feedback JSON: { "summary": "...", "strengths": [...], "gaps": [...], "next": [...] }
 Candidate: ${context.candidate.member.name}
@@ -77,7 +80,7 @@ Covered: ${context.coveredDays.map(d => d.title).join(', ')}`;
 
     try {
       const completion = await this.getClient().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: process.env.GROK_MODEL || 'grok-3-mini',
         messages: [
           { role: 'system', content: 'Return valid JSON matching requested keys.' },
           { role: 'user', content: prompt }
@@ -91,7 +94,7 @@ Covered: ${context.coveredDays.map(d => d.title).join(', ')}`;
       try {
         parsed = JSON.parse(text);
       } catch {
-        console.warn('OpenAI returned malformed JSON for feedback, using fallback.');
+        console.warn('Grok returned malformed JSON for feedback, using fallback.');
       }
 
       return {

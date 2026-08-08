@@ -7,13 +7,16 @@ let cachedCurriculum: CurriculumData | null = null;
 export function loadCurriculum(): CurriculumData {
   if (cachedCurriculum) return cachedCurriculum;
 
-  // Path to curriculum.json in Interviewer directory
-  const possiblePaths = [
-    path.join(__dirname, '../../../Interviewer/curriculum.json'),
-    path.join(process.cwd(), '../Interviewer/curriculum.json'),
-    path.join(process.cwd(), 'Interviewer/curriculum.json'),
-    path.join(process.cwd(), 'curriculum.json')
-  ];
+  const possiblePaths: string[] = [];
+  if (process.env.CURRICULUM_PATH) {
+    possiblePaths.push(process.env.CURRICULUM_PATH);
+  }
+  
+  possiblePaths.push(
+    path.join(process.cwd(), 'curriculum.json'), // Docker root
+    path.join(process.cwd(), '../curriculum.json'), // Local dev from backend dir
+    path.join(__dirname, '../../../../curriculum.json') // Absolute fallback
+  );
 
   for (const p of possiblePaths) {
     if (fs.existsSync(p)) {
@@ -23,7 +26,7 @@ export function loadCurriculum(): CurriculumData {
     }
   }
 
-  throw new Error('curriculum.json not found in expected paths');
+  throw new Error(`curriculum.json not found. Checked paths:\n${possiblePaths.join('\n')}`);
 }
 
 export function getCurriculumDayMap(): Map<number, CurriculumDay> {
