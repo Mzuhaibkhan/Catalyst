@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
   
-  const candidatesPath = path.join(__dirname, '../../../candidates.json');
+  const candidatesPath = path.join(__dirname, '../../candidates.json');
   const candidatesData = JSON.parse(fs.readFileSync(candidatesPath, 'utf-8'));
 
   for (const c of candidatesData.candidates) {

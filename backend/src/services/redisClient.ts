@@ -9,7 +9,7 @@ class RedisService {
     try {
       this.client = new Redis(redisUrl, {
         maxRetriesPerRequest: 1,
-        retryStrategy: (times) => {
+        retryStrategy: (times: number) => {
           if (times > 2) {
             // Stop retrying quickly to fallback smoothly to in-memory store
             return null;
@@ -24,7 +24,7 @@ class RedisService {
         console.log('⚡ Redis connected successfully. High-speed session caching active.');
       });
 
-      this.client.on('error', (err) => {
+      this.client.on('error', (err: any) => {
         if (this.isConnected) {
           console.warn('⚠️ Redis connection error. Falling back to in-memory store:', err.message);
         }

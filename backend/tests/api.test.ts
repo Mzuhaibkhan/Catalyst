@@ -15,7 +15,7 @@ async function runEndToEndTest() {
     console.log(`Session ID: ${sessionId}`);
 
     // 1. Initialize session
-    const session = sessionStore.getOrCreateSession(sessionId, candidate as any);
+    const session = await sessionStore.getOrCreateSession(sessionId, candidate as any);
     console.log(`Target Curriculum Days planned: ${session.targetDays.join(', ')}`);
 
     let done = false;
@@ -34,7 +34,9 @@ async function runEndToEndTest() {
       "In our agentic pipeline, we implemented Model Context Protocol (MCP) tools allowing agents to query live vector stores and execute code securely.",
       "We deployed our pipeline using Docker containers on Kubernetes with Prometheus monitoring and structured logging for observability.",
       "For evaluation, we measured precision@k and MRR across test queries to continuously benchmark retriever accuracy.",
-      "In the capstone demo, we integrated tool-calling agents with fallback logic to handle external API failures gracefully."
+      "In the capstone demo, we integrated tool-calling agents with fallback logic to handle external API failures gracefully.",
+      "I appreciate the deep dive into all these topics across the AI engineering curriculum.",
+      "Thank you for the thorough technical discussion. I enjoyed sharing our architectural decisions and trade-offs!"
     ];
 
     for (const answer of mockAnswers) {

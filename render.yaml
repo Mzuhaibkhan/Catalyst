@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: ai-interview-agent
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: MAX_SESSIONS
+        value: 100
+      - key: SESSION_TTL_HOURS
+        value: 2
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GROK_API_KEY_1
+        sync: false
+      - key: NVIDIA_NIM_API_KEY_1
+        sync: false

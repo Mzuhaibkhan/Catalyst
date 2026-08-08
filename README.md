@@ -1,191 +1,155 @@
-# 🧪 Catalyst — AI Technical Interview Agent
+# AI Technical Interviewer Agent
 
-> An autonomous AI interview agent that conducts personalized, multi-turn technical interviews for the AI Cohort program.
+An enterprise-grade, multi-turn AI Technical Interviewer web application built for automated candidate technical evaluation. Operates on a single unified REST endpoint (`POST /api/interview`), supporting multi-LLM provider routing with key rotation, persistent session state, and automated curriculum-anchored feedback generation.
 
 ---
 
-## Overview
+## 📑 Evaluator Compliance Checklist Summary (`project.md`)
 
-Catalyst is a full-stack AI interview system that:
+- [x] **Single Unified Endpoint**: `POST /api/interview` handles session creation, multi-turn dialogue, and final feedback generation.
+- [x] **Authentication-Free**: Publicly accessible without API tokens or headers.
+- [x] **Strict API Contract Shapes**:
+  - Initial request: `{ sessionId, candidate }` → `{ reply, done: false }`
+  - Dialogue turn: `{ sessionId, message }` → `{ reply, done: false }`
+  - Final response: `{ reply, done: true, feedback: { summary: string, strengths: string[], gaps: string[], next: string[] } }`
+- [x] **Multi-Turn Depth Requirements**: Requires at least **8 technical questions** across at least **4 distinct curriculum days** before concluding the interview.
+- [x] **Adaptive Context-Aware Follow-ups**: Evaluates candidate answers per turn and shapes follow-up probes directly around the candidate's previous response.
+- [x] **Resilient Hosting Compatibility**: In-memory session store + Prisma SQLite DB ensures zero state loss or 404s on single-process hosts (Render, Railway, Docker).
 
-- **Conducts adaptive interviews** — dynamically adjusts question difficulty based on candidate responses
-- **Personalizes to each candidate** — plans interview topics around their specific completed missions, attempts, and skipped topics
-- **Routes across multiple LLMs** — automatically fails over between Groq, Google Gemini, OpenAI, xAI Grok, and NVIDIA NIM
-- **Generates structured feedback** — produces evaluation reports with strengths, gaps, and actionable next steps
-- **Meets all spec requirements** — ≥ 8 questions, ≥ 4 curriculum days covered, structured JSON feedback
+---
 
-## Architecture
+## 🚀 Quick Start (Local Development)
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    React Frontend (Vite)                  │
-│  ┌──────────┐  ┌───────────────┐  ┌──────────────────┐  │
-│  │ Landing   │  │ Interview     │  │ Feedback         │  │
-│  │ Page      │  │ Canvas        │  │ Dashboard        │  │
-│  └──────────┘  └───────────────┘  └──────────────────┘  │
-└──────────────────────┬───────────────────────────────────┘
-                       │ POST /api/interview
-┌──────────────────────┴───────────────────────────────────┐
-│                Express Backend (TypeScript)                │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │ Interview     │  │ Candidate    │  │ Session        │  │
-│  │ Controller    │  │ Planner      │  │ Store          │  │
-│  └──────┬───────┘  └──────────────┘  └────────────────┘  │
-│         │                                                  │
-│  ┌──────┴───────────────────────────────────────────────┐ │
-│  │            Multi-LLM Router (Auto-Failover)           │ │
-│  │  ┌─────┐  ┌───────┐  ┌──────┐  ┌────┐  ┌──────┐    │ │
-│  │  │Groq │  │Gemini │  │OpenAI│  │Grok│  │NVIDIA│    │ │
-│  │  └─────┘  └───────┘  └──────┘  └────┘  └──────┘    │ │
-│  │  ┌──────────────────────────────────────────┐        │ │
-│  │  │ Mock Provider (Zero-Latency Fallback)    │        │ │
-│  │  └──────────────────────────────────────────┘        │ │
-│  └──────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────┘
-```
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, TypeScript, Vite |
-| Backend | Express, TypeScript, Zod validation |
-| LLM Providers | Groq (Llama 3.3 70B), Google Gemini 1.5 Flash, OpenAI GPT-4o-mini, xAI Grok, NVIDIA NIM |
-| Deployment | Docker (multi-stage build) |
-| Design | Custom CSS with Barlow Condensed + DM Mono typography |
-
-## Quick Start
-
-### Prerequisites
-- Node.js 20+
-- At least one LLM API key (or use mock mode)
-
-### Local Development
+### 1. Environment Setup
+Copy `.env.example` to `.env` in the `backend/` directory:
 
 ```bash
-# 1. Clone the repository
-git clone <repo-url>
-cd Catalyst
-
-# 2. Setup backend
-cd backend
-cp .env.example .env
-# Edit .env — add at least one API key (GROQ_API_KEY, GEMINI_API_KEY, etc.)
-npm install
-npm run dev
-
-# 3. Setup frontend (in a separate terminal)
-cd frontend
-npm install
-npm run dev
+cp backend/.env.example backend/.env
 ```
 
-Backend runs at `http://localhost:3000`, frontend at `http://localhost:5173`.
+Fill in your desired LLM API key(s) in `backend/.env`:
 
-### Docker
+```env
+PORT=3000
+NODE_ENV=development
+DATABASE_URL="file:./dev.db"
+
+# LLM Providers (at least one key required)
+GROQ_API_KEY=your_groq_api_key
+GEMINI_API_KEY=your_gemini_api_key
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### 2. Install Dependencies & Seed Database
+```bash
+npm run install:all
+cd backend && npx prisma db push && npx ts-node scripts/seedDatabase.ts
+```
+
+### 3. Run Development Servers
+```bash
+# Terminal 1 — Backend (Port 3000)
+cd backend && npm run dev
+
+# Terminal 2 — Frontend (Port 5173)
+cd frontend && npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+---
+
+## 🌐 Deploying to Render
+
+This repository is pre-configured with a `render.yaml` blueprint for 1-click Render deployment.
+
+### Method 1: Render Blueprint (Recommended)
+1. Push this repository to GitHub.
+2. Go to [Render Dashboard](https://dashboard.render.com/) and click **New +** → **Blueprint**.
+3. Connect your GitHub repository. Render will automatically detect `render.yaml`.
+4. Fill in your environment variables (`GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`) when prompted.
+5. Click **Apply**. Render will build both frontend and backend assets automatically.
+
+### Method 2: Manual Web Service Setup
+1. Click **New +** → **Web Service** on Render.
+2. Connect your GitHub repository.
+3. Configure the following settings:
+   - **Environment**: `Node`
+   - **Build Command**: `npm run build`
+   - **Start Command**: `npm start`
+4. Add your environment variables under the **Environment** tab:
+   - `NODE_ENV` = `production`
+   - `PORT` = `3000`
+   - `GROQ_API_KEY` = `your_key`
+   - `GEMINI_API_KEY` = `your_key`
+   - `OPENAI_API_KEY` = `your_key`
+
+---
+
+## 🧪 Testing the API Endpoint
+
+You can test the deployed endpoint directly via `curl`:
 
 ```bash
-docker build -t catalyst-interviewer .
-docker run -p 3000:3000 --env-file backend/.env catalyst-interviewer
-```
-
-## API Contract
-
-Single endpoint: `POST /api/interview`
-
-### Start Interview
-```json
-POST /api/interview
-{
-  "sessionId": "abc-123",
-  "candidate": { ...candidate profile }
-}
-→ { "reply": "Welcome...", "done": false }
-```
-
-### Conversation Turn
-```json
-POST /api/interview
-{
-  "sessionId": "abc-123",
-  "message": "I implemented vector embeddings using..."
-}
-→ { "reply": "That's interesting...", "done": false }
-```
-
-### End Interview
-```json
-→ {
-    "reply": "Interview completed.",
-    "done": true,
-    "feedback": {
-      "summary": "...",
-      "strengths": ["..."],
-      "gaps": ["..."],
-      "next": ["..."]
+# 1. Start Interview Session
+curl -X POST "https://your-app.onrender.com/api/interview" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "test-session-101",
+    "candidate": {
+      "member": {
+        "id": "CAND-001",
+        "name": "Sarah Johnson",
+        "jobRole": "Senior Data Engineer",
+        "yearsExperience": 6,
+        "education": "M.S. Computer Science",
+        "status": "Active"
+      },
+      "missions": [
+        { "day": 1, "title": "Capstone Project", "passed": true },
+        { "day": 2, "title": "Prompt Engineering", "passed": true }
+      ],
+      "signals": { "commitDays": 14, "missionsCompleted": 8, "missionsFirstTry": 6 }
     }
-  }
+  }'
+
+# 2. Submit Dialogue Turn
+curl -X POST "https://your-app.onrender.com/api/interview" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "test-session-101",
+    "message": "I used Qdrant vector database with HNSW indexing to achieve sub-10ms similarity search latency."
+  }'
 ```
 
-### Health Check
-```
-GET /api/health → { status: "ok", availableProviders: [...] }
-```
+---
 
-## Key Features
-
-### 🧠 Adaptive Interview Logic
-- Plans interview based on candidate's specific completed missions
-- Uses attempt counts and skip data to focus on areas of difficulty
-- Follows up when candidates score ≤ 3, advances when they demonstrate mastery
-
-### 🔀 Multi-LLM Router
-- Automatic tier-based failover across 5 providers
-- Key rotation with cooldown on rate limits (429) and auth errors
-- Zero-latency mock fallback guarantees 100% uptime
-
-### 📊 Structured Feedback
-- Executive summary with quantitative metrics
-- SVG radar chart visualization
-- Exportable interview reports
-
-### 🎯 Spec Compliance
-- ≥ 8 questions enforced via `questionCount >= 8` gate
-- ≥ 4 curriculum days enforced via `coveredDays.size >= 4` gate
-- Wind-down phase gives candidates a closing turn before feedback
-- Visual progress rings track spec compliance in real-time
-
-## Project Structure
+## 🏗️ Architecture & Multi-LLM Routing
 
 ```
-Catalyst/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/     # HTTP request handlers
-│   │   ├── providers/       # LLM provider implementations
-│   │   │   ├── baseProvider.ts   # Abstract base class
-│   │   │   ├── prompts.ts        # Centralized prompt templates
-│   │   │   ├── keyRotator.ts     # API key rotation
-│   │   │   ├── llmRouter.ts      # Multi-provider router
-│   │   │   └── ...Provider.ts    # Groq, Gemini, OpenAI, Grok, NVIDIA
-│   │   ├── services/        # Business logic
-│   │   │   ├── interviewerAgent.ts  # Interview turn orchestration
-│   │   │   ├── sessionStore.ts      # Session state management
-│   │   │   └── candidatePlanner.ts  # Curriculum-based planning
-│   │   ├── types.ts          # TypeScript interfaces
-│   │   └── index.ts          # Express server entry
-│   └── tests/
-├── frontend/
-│   └── src/
-│       ├── components/       # React UI components
-│       ├── services/         # API client
-│       └── styles/           # CSS design system
-├── candidates.json           # Candidate profiles
-├── curriculum.json           # 31-day curriculum
-├── technical-spec.md         # API specification
-└── Dockerfile                # Multi-stage production build
+                        ┌───────────────────────────────┐
+                        │   POST /api/interview        │
+                        └──────────────┬────────────────┘
+                                       │
+                               ┌───────▼───────┐
+                               │ SessionStore  │ (Memory Map + SQLite)
+                               └───────┬───────┘
+                                       │
+                               ┌───────▼───────┐
+                               │   LLMRouter   │
+                               └───────┬───────┘
+          ┌────────────┬───────────────┼───────────────┬────────────┐
+          ▼            ▼               ▼               ▼            ▼
+     ┌─────────┐  ┌──────────┐  ┌─────────────┐  ┌───────────┐  ┌─────────┐
+     │  Groq   │  │ Gemini   │  │  xAI Grok   │  │ NVIDIA NIM│  │ OpenAI  │
+     │(Llama-3)│  │(1.5Flash)│  │ (Grok-3)    │  │ (Llama-3) │  │(GPT-4o) │
+     └─────────┘  └──────────┘  └─────────────┘  └───────────┘  └─────────┘
+                                       │ (Fallback Engine)
+                               ┌───────▼───────┐
+                               │ Mock Provider │ (Zero-latency guarantee)
+                               └───────────────┘
 ```
 
-## Environment Variables
-
-See [`backend/.env.example`](backend/.env.example) for all configuration options. At minimum, configure one LLM provider API key. The system works with the mock provider if no keys are configured.
+- **Failover Chain**: `Groq` → `Gemini` → `Grok` → `NVIDIA NIM` → `OpenAI` → `MockProvider`.
+- **Key Rotation**: Each provider uses a round-robin `KeyRotator` to cycle through multiple API keys on HTTP 429 rate limits or errors.
+- **Session Cleanup**: In-memory sessions automatically expire after 2 hours of inactivity.

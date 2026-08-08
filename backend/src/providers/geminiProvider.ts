@@ -9,7 +9,7 @@ export class GeminiProvider extends BaseLLMProvider {
   private getModel() {
     const ai = new GoogleGenerativeAI(this.rotator.getKey());
     return ai.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest',
       generationConfig: { responseMimeType: 'application/json' }
     });
   }

@@ -29,3 +29,8 @@ logs
 
 # Docker
 docker-compose.override.yml
+
+# SQLite Database
+*.db
+*.db-journal
+dev.db

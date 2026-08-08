@@ -4,65 +4,45 @@ import { LandingPage } from './components/LandingPage';
 import { Footer } from './components/Footer';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { CandidateDossier } from './components/CandidateDossier';
-import { InterviewCanvas, TurnMessage } from './components/InterviewCanvas';
+import { InterviewCanvas } from './components/InterviewCanvas';
 import { FeedbackDashboard } from './components/FeedbackDashboard';
 import { ApiDebugger } from './components/ApiDebugger';
-import { ToastContainer, showToast } from './components/Toast';
+import { ToastContainer } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
-import { sendInterviewRequest, checkBackendHealth, abortCurrentRequest, CandidateProfile, InterviewFeedback } from './services/api';
+import { CandidateProfile } from './services/api';
 import candidatesData from '../../candidates.json';
+
+import { useBackendHealth } from './hooks/useBackendHealth';
+import { useInterviewSession } from './hooks/useInterviewSession';
 
 const AppContent: React.FC = () => {
   useSmoothScroll();
   const allCandidates = candidatesData.candidates as CandidateProfile[];
+  
+  // UI State
   const [activeView, setActiveView] = useState<'landing' | 'console'>('landing');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
-
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile>(allCandidates[0]);
-  const [sessionId, setSessionId] = useState<string>(`session-${Date.now()}`);
-
   const [activeProvider, setActiveProvider] = useState<string>('auto');
-  const [latencyMs, setLatencyMs] = useState<number | null>(null);
-  const [serverStatus, setServerStatus] = useState<string>('checking');
 
-  const [history, setHistory] = useState<TurnMessage[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isStarted, setIsStarted] = useState<boolean>(false);
-  const [isComplete, setIsComplete] = useState<boolean>(false);
-
-  const [questionCount, setQuestionCount] = useState<number>(0);
-  const [coveredDaysCount, setCoveredDaysCount] = useState<number>(0);
-  const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
-
-  const [lastPayload, setLastPayload] = useState<any>(null);
-  const [lastResponse, setLastResponse] = useState<any>(null);
-
-  // Check health on load
-  useEffect(() => {
-    checkBackendHealth().then(res => {
-      setServerStatus(res.status);
-      if (res.status === 'ok') {
-        showToast(`Backend online — ${res.availableProviders.length} LLM provider(s) available`, 'success');
-      } else {
-        showToast('Backend is offline. Make sure the server is running on port 3000.', 'error');
-      }
-    });
-  }, []);
+  // Custom Hooks for Logic
+  const { serverStatus } = useBackendHealth();
+  const session = useInterviewSession(selectedCandidate, activeProvider);
 
   // Keyboard shortcut: Ctrl+Enter to start interview
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'Enter' && !isStarted && !isLoading) {
+      if (e.ctrlKey && e.key === 'Enter' && !session.isStarted && !session.isLoading) {
         if (activeView === 'landing') {
           setActiveView('console');
         }
-        handleStartInterview();
+        session.startInterview();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isStarted, isLoading, selectedCandidate, activeProvider, activeView]);
+  }, [session.isStarted, session.isLoading, session.startInterview, activeView]);
 
   const handleStartConsole = (candidateName?: string) => {
     if (candidateName) {
@@ -75,113 +55,6 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleStartInterview = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-    const newSessionId = `session-${Date.now()}`;
-    setSessionId(newSessionId);
-
-    const payload = {
-      sessionId: newSessionId,
-      candidate: selectedCandidate,
-      provider: activeProvider !== 'auto' ? activeProvider : undefined
-    };
-
-    setLastPayload(payload);
-
-    try {
-      const res = await sendInterviewRequest(payload);
-      setLastResponse(res);
-      setIsStarted(true);
-
-      if (res.metrics) {
-        setLatencyMs(res.metrics.latencyMs);
-        setQuestionCount(res.metrics.questionCount);
-        setCoveredDaysCount(res.metrics.coveredDaysCount);
-      }
-
-      setHistory([{
-        speaker: 'interviewer',
-        text: res.reply,
-        timestamp: new Date().toLocaleTimeString(),
-        provider: res.metrics?.provider,
-        latencyMs: res.metrics?.latencyMs,
-        evaluation: res.evaluation
-      }]);
-
-      showToast('Interview session initialized successfully', 'success');
-    } catch (err: any) {
-      showToast(`Error starting interview: ${err.message}`, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSendAnswer = async (answerText: string) => {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    const userMsg: TurnMessage = {
-      speaker: 'candidate',
-      text: answerText,
-      timestamp: new Date().toLocaleTimeString()
-    };
-
-    setHistory(prev => [...prev, userMsg]);
-
-    const payload = {
-      sessionId,
-      message: answerText,
-      provider: activeProvider !== 'auto' ? activeProvider : undefined
-    };
-
-    setLastPayload(payload);
-
-    try {
-      const res = await sendInterviewRequest(payload);
-      setLastResponse(res);
-
-      if (res.metrics) {
-        setLatencyMs(res.metrics.latencyMs);
-        setQuestionCount(res.metrics.questionCount);
-        setCoveredDaysCount(res.metrics.coveredDaysCount);
-      }
-
-      const interviewerMsg: TurnMessage = {
-        speaker: 'interviewer',
-        text: res.reply,
-        timestamp: new Date().toLocaleTimeString(),
-        provider: res.metrics?.provider,
-        latencyMs: res.metrics?.latencyMs,
-        evaluation: res.evaluation
-      };
-
-      setHistory(prev => [...prev, interviewerMsg]);
-
-      if (res.done && res.feedback) {
-        setIsComplete(true);
-        setFeedback(res.feedback);
-        showToast('Interview complete — evaluation ready', 'info');
-      }
-    } catch (err: any) {
-      showToast(`Error sending answer: ${err.message}`, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResetInterview = () => {
-    abortCurrentRequest();
-    setIsStarted(false);
-    setIsComplete(false);
-    setHistory([]);
-    setQuestionCount(0);
-    setCoveredDaysCount(0);
-    setFeedback(null);
-    setLatencyMs(null);
-    showToast('Session reset. Select a candidate and start a new interview.', 'info');
-  };
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--base-100)' }}>
       
@@ -192,7 +65,7 @@ const AppContent: React.FC = () => {
           onViewChange={setActiveView}
           activeProvider={activeProvider}
           onProviderChange={setActiveProvider}
-          latencyMs={latencyMs}
+          latencyMs={session.latencyMs}
           serverStatus={serverStatus}
           onOpenPrivacy={() => setIsPrivacyOpen(true)}
         />
@@ -210,35 +83,35 @@ const AppContent: React.FC = () => {
               <CandidateDossier
                 selectedCandidate={selectedCandidate}
                 onSelectCandidate={setSelectedCandidate}
-                questionCount={questionCount}
-                coveredDaysCount={coveredDaysCount}
-                isInterviewStarted={isStarted}
+                questionCount={session.questionCount}
+                coveredDaysCount={session.coveredDaysCount}
+                isInterviewStarted={session.isStarted}
               />
 
               {/* Right Panel: Interactive Canvas or Final Feedback */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {isComplete && feedback ? (
+                {session.isComplete && session.feedback ? (
                   <FeedbackDashboard
-                    feedback={feedback}
+                    feedback={session.feedback}
                     candidateName={selectedCandidate.member.name}
-                    history={history}
+                    history={session.history}
                   />
                 ) : (
                   <InterviewCanvas
-                    history={history}
-                    isLoading={isLoading}
-                    isComplete={isComplete}
-                    isStarted={isStarted}
-                    onStartInterview={handleStartInterview}
-                    onSendAnswer={handleSendAnswer}
-                    onResetInterview={handleResetInterview}
+                    history={session.history}
+                    isLoading={session.isLoading}
+                    isComplete={session.isComplete}
+                    isStarted={session.isStarted}
+                    onStartInterview={session.startInterview}
+                    onSendAnswer={session.sendAnswer}
+                    onResetInterview={session.resetInterview}
                   />
                 )}
               </div>
             </div>
 
             {/* Technical REST API Payload Inspector */}
-            <ApiDebugger lastPayload={lastPayload} lastResponse={lastResponse} />
+            <ApiDebugger lastPayload={session.lastPayload} lastResponse={session.lastResponse} />
           </div>
         )}
       </div>
