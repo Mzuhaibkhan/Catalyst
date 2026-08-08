@@ -30,14 +30,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onNavigateConsole
       position: 'relative'
     }}>
       <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-        
+
         {/* Top Footer Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-          
+
           {/* Brand Col */}
           <div>
             <div className="juno-tag" style={{ background: 'var(--accent-1)', color: 'var(--base-300)', marginBottom: '1rem' }}>
-              <span>▶</span> JUNOWATTS.AI // ENGINE
+              <span>▶</span> Interview Alchemy
             </div>
             <h2 style={{ fontSize: '3rem', color: 'var(--base-100)', marginBottom: '0.75rem', letterSpacing: '-0.02rem' }}>
               AI INTERVIEWER
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onNavigateConsole
             </p>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0 }}>
               <li>
-                <button 
+                <button
                   onClick={onNavigateConsole}
                   style={{ background: 'none', border: 'none', color: 'var(--base-100)', fontFamily: 'DM Mono', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0 }}
                 >
@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onNavigateConsole
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={onOpenPrivacy}
                   style={{ background: 'none', border: 'none', color: 'var(--base-100)', fontFamily: 'DM Mono', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0 }}
                 >
@@ -108,7 +108,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onNavigateConsole
         {/* Bottom Bar */}
         <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <p className="juno-mono" style={{ color: 'var(--base-muted)', fontSize: '0.8rem', margin: 0 }}>
-            © {new Date().getFullYear()} JUNOWATTS.AI ARCHITECTURE. ALL RIGHTS RESERVED.
+            © {new Date().getFullYear()}. ALL RIGHTS RESERVED.
           </p>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button onClick={onOpenPrivacy} className="juno-mono" style={{ background: 'none', border: 'none', color: 'var(--accent-1)', cursor: 'pointer', fontSize: '0.8rem' }}>
