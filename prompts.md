@@ -1,10 +1,18 @@
-# AI Technical Interviewer Agent — Prompt Documentation (`prompts.md`)
+# Master Prompt Documentation & Analysis (`PROMPTS.md`)
 
-This document contains all system prompts, candidate signal extraction templates, turn question generation prompts, and feedback evaluation prompts used across the LLM providers (Groq, Gemini, OpenAI, xAI Grok, NVIDIA NIM, and Mock Fallback Engine).
+This master document consolidates all prompt documentation for the **AI Technical Interviewer Agent / Catalyst** application into a single unified reference. It contains three main sections:
+
+1. **Part 1: Technical System Prompts & LLM Templates** — The prompt engineering, system instructions, dynamic turn generators, and feedback synthesis prompts used by the AI agent engine.
+2. **Part 2: Complete User Prompt Log** — Chronological history of user prompts, instructions, and feature requests submitted across the project build phases.
+3. **Part 3: Deep-Dive User Prompt Analysis & Meta-Analysis** — In-depth technical analysis of user directives, workspace metadata, prompt intents, comparative matrices, and engineering pattern synthesis.
 
 ---
 
-## 1. System Prompts
+# Part 1: Technical System Prompts & LLM Templates
+
+This section contains all system prompts, candidate signal extraction templates, turn question generation prompts, and feedback evaluation prompts used across the multi-provider LLM routing architecture (Groq, Gemini, OpenAI, xAI Grok, NVIDIA NIM, and local Mock fallback engine).
+
+## 1.1 System Prompts
 
 ### Turn Generation System Prompt (`TURN_SYSTEM_PROMPT`)
 ```text
@@ -25,9 +33,9 @@ ALWAYS output valid JSON matching the specified format.
 
 ---
 
-## 2. Candidate Signal Extraction Template
+## 1.2 Candidate Signal Extraction Template
 
-Before each turn and feedback generation, the candidate's mission history and signals are extracted into the prompt context:
+Before each turn and feedback generation, the candidate's mission history and performance signals are dynamically extracted into prompt context:
 
 ```text
 Candidate: {candidate.member.name}
@@ -52,7 +60,7 @@ Strength areas (first-try passes):
 
 ---
 
-## 3. Interview Turn Question Prompt (`buildTurnPrompt`)
+## 1.3 Interview Turn Question Prompt (`buildTurnPrompt`)
 
 Generated per dialogue turn. Adapts dynamically based on whether it is an opening question, topic transition, or follow-up probe:
 
@@ -87,7 +95,7 @@ Return JSON:
 
 ---
 
-## 4. Final Feedback Synthesis Prompt (`buildFeedbackPrompt`)
+## 1.4 Final Feedback Synthesis Prompt (`buildFeedbackPrompt`)
 
 Executed at the conclusion of the interview (after minimum 8 questions and 4 curriculum days):
 
@@ -116,3 +124,102 @@ Return JSON with these exact keys:
   "next": ["Actionable recommendation 1", "Actionable recommendation 2", "Actionable recommendation 3"]
 }
 ```
+
+---
+
+# Part 2: Complete User Prompt History & Building Log
+
+Chronological record of all user prompts, instructions, and feature requests provided to the AI assistant to build, refactor, optimize, verify, document, and deploy the application.
+
+## 2.1 Initial Implementation & Architecture
+- **Prompt 1**: *"use this implementation plan"*
+- **Prompt 2**: *"backend is saying no circulam jason check if it has jason file otherwise i will give you"*
+- **Prompt 3**: *"make this implation do on this project if done verify and improve code base of changes mention in plan if neede"* *(Attached implementation plan covering round-robin key rotation, multi-provider failover, session TTL, and AbortController)*
+- **Prompt 4**: *"push to github repo"*
+- **Prompt 5**: *"push to github repo https://github.com/Mzuhaibkhan/Interviewer.git"*
+- **Prompt 6**: *"keep fronted styling same but jsut make it more organised and user friendly dont change ui and aux design keep it same"*
+
+## 2.2 Verification, Compliance & Deployment
+- **Prompt 7**: *"analse the project and improve its bacend code efficiency and peformance and make sure it vrifies all terms in md file and give me plan before changes"*
+- **Prompt 8**: *"pull the repo and merge with mine such that i does not break functionality"*
+- **Prompt 9**: *"analse the project and improve its bacend code efficiency and peformance and make sure it vrifies all terms in md file and give me plan before changes and make it ready for deployment in render"*
+- **Prompt 10**: *(Approval of implementation plan containing root `package.json`, `render.yaml`, SQLite/Prisma fallback, and curriculum caching)*
+- **Prompt 11**: *"push changes to github repo"*
+- **Prompt 12**: *"upDATE DOCKER IMAGE FOR deploying"*
+
+## 2.3 Documentation & Analysis Requests
+- **Prompt 13**: *"give me propmt .md which used in this project"*
+- **Prompt 14**: *"i want a file which has all the prompts which i used in this project"*
+- **Prompt 15**: *"just give me file of all the chats i used this project to build it not technical prompts"*
+- **Prompt 16**: *"analyze the implementation plan for the improvement of the application and improve on the given implementation plan"*
+- **Prompt 17**: *"analyze all the past conversation about my prompts in a prompt.md make sure to include all the prompts by me in all the past conversation"*
+- **Prompt 18**: *"now combine the files of prompt.md and prompts.md into a single file called PROMPTS.md"*
+
+---
+
+# Part 3: Deep-Dive User Prompt Meta-Analysis
+
+Detailed analytical breakdown of the user prompt requests, workspace context, audit findings, and intent trajectory.
+
+## 3.1 Prompt Analysis Sessions
+
+### Session Turn 1: Implementation Plan Audit & Upgrade
+- **Timestamp**: `2026-08-08T05:43:41Z`
+- **Active Workspace**: `Interviewer` (`c:\Github\AB_Talk_hackathon\Interviewer`)
+- **Active Document**: [`implementation_plan.md`](file:///c:/Github/AB_Talk_hackathon/Interviewer/implementation_plan.md)
+- **Model Selected**: Claude 3.5 Sonnet / Opus (Thinking)
+- **Prompt Text**:
+  > `analyze the implementation plan for the improvement of the application and improve on the given implementation plan`
+- **Technical Intent**: Review draft `implementation_plan.md`, audit codebase, identify gaps/vulnerabilities, and write a revised 12-phase execution plan.
+- **Audit Findings Discovered**:
+  1. Incorrect file paths (`D:/Project/...` instead of actual repo path).
+  2. Missing input validation (`zod` installed but unused).
+  3. Incomplete timeouts (feedback generation omitted).
+  4. Missing rate limiting against API quota exhaustion.
+  5. Synchronous `fs.existsSync` on every GET request blocking event loop.
+  6. Docker path resolution fragility for `curriculum.json`.
+- **Deliverable Produced**: 12-phase revised `implementation_plan.md` with key rotator architecture, Zod validation, rate limiting, and verification steps.
+
+---
+
+### Session Turn 2: Meta-Analysis & Log Synthesis
+- **Timestamp**: `2026-08-08T18:19:35Z`
+- **Active Workspace**: `Catalyst` (`c:\Github\AB_Talk_hackathon\Catalyst`)
+- **Active Document**: [`seedDatabase.ts`](file:///c:/Github/AB_Talk_hackathon/Catalyst/backend/scripts/seedDatabase.ts)
+- **Model Selected**: Gemini 3.6 Flash (High)
+- **Prompt Text**:
+  > `analyze all the past conversation about my prompts in a prompt.md make sure to include all the prompts by me in all the past conversation`
+- **Technical Intent**: Extract all conversation history from system transcripts, analyze user prompt intent and workspace context, and document the analysis inside `prompt.md`.
+- **Deliverable Produced**: Initial [`prompt.md`](file:///c:/Github/AB_Talk_hackathon/prompt.md) log document.
+
+---
+
+### Session Turn 3: Master File Consolidation (`PROMPTS.md`)
+- **Timestamp**: `2026-08-09T00:04:44+05:30`
+- **Active Workspace**: `Catalyst` (`c:\Github\AB_Talk_hackathon\Catalyst`)
+- **Active Document**: [`prompt.md`](file:///c:/Github/AB_Talk_hackathon/Catalyst/prompt.md)
+- **Model Selected**: Gemini 3.6 Flash (High)
+- **Prompt Text**:
+  > `now combine the files of prompt.md and prompts.md into a single file called PROMPTS.md`
+- **Technical Intent**: Consolidate technical system prompts, complete user chat history, and meta-analysis documentation into a single master reference file [`PROMPTS.md`](file:///c:/Github/AB_Talk_hackathon/PROMPTS.md).
+
+---
+
+## 3.2 Matrix of User Prompts & Analysis
+
+| Turn | Timestamp | Workspace / Target | Core Objective | Key Deliverables |
+|---|---|---|---|---|
+| **1** | `2026-08-08T05:43:41Z` | `Interviewer` / `implementation_plan.md` | Codebase audit & 12-phase implementation plan | Revised [`implementation_plan.md`](file:///c:/Github/AB_Talk_hackathon/Interviewer/implementation_plan.md) with Zod, KeyRotator, timeouts, rate limits |
+| **2** | `2026-08-08T18:19:35Z` | `Catalyst` / `seedDatabase.ts` | Transcript extraction & prompt history log | Created [`prompt.md`](file:///c:/Github/AB_Talk_hackathon/prompt.md) |
+| **3** | `2026-08-09T00:04:44+05:30` | `Catalyst` / `prompt.md` | Merge all prompt files into unified master reference | Created [`PROMPTS.md`](file:///c:/Github/AB_Talk_hackathon/PROMPTS.md) |
+
+---
+
+## 3.3 Synthesis of Architectural Directives
+
+1. **Enterprise Multi-LLM Reliability**:
+   Focus on round-robin key rotation (`KeyRotator`), multi-provider failover (Groq, Gemini, OpenAI, xAI Grok, NVIDIA NIM), and zero-latency local fallback execution.
+2. **Production-Grade Server Hardening**:
+   Enforces strict Zod input validation, IP-based rate limiting, non-blocking asynchronous asset serving, session TTL sweeps, and client-side AbortController cancellations.
+3. **Comprehensive Documentation & Auditing**:
+   Values complete transparency, maintainable execution plans, explicit prompt engineering templates, and systematic session logging.
