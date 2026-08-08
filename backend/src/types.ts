@@ -76,6 +76,7 @@ export interface SessionState {
   currentDayIndex: number;
   questionCount: number;
   isComplete: boolean;
+  isWindingDown: boolean;
   feedback?: InterviewFeedback;
   createdAt: number;
   lastUpdatedAt: number;
@@ -95,6 +96,10 @@ export interface InterviewResponse {
   reply: string;
   done: boolean;
   feedback?: InterviewFeedback;
+  evaluation?: {
+    score: number;
+    notes: string;
+  };
   metrics?: {
     latencyMs: number;
     provider: string;

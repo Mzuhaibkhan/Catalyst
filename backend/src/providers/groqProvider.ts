@@ -59,7 +59,12 @@ Return JSON format:
     });
 
     const text = completion.choices[0]?.message?.content || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('Groq returned malformed JSON for turn response, using fallback.');
+    }
 
     return {
       reply: parsed.reply || `Could you detail your technical decisions on Day ${context.currentDay.day}?`,
@@ -101,7 +106,12 @@ Return JSON with exact keys:
     });
 
     const text = completion.choices[0]?.message?.content || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('Groq returned malformed JSON for feedback, using fallback.');
+    }
 
     return {
       summary: parsed.summary || `${context.candidate.member.name} completed the technical interview.`,

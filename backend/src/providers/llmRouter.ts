@@ -27,7 +27,7 @@ export class LLMRouter {
     questionCount: number;
     isFollowUp: boolean;
     requestedProvider?: string;
-  }): Promise<{ reply: string; score: number; provider: string; latencyMs: number }> {
+  }): Promise<{ reply: string; score: number; notes: string; provider: string; latencyMs: number }> {
     const start = Date.now();
 
     // If specific provider requested and available

@@ -43,7 +43,12 @@ Format output as JSON: {"reply": "...", "score": 4, "notes": "..."}`;
     });
 
     const text = completion.choices[0]?.message?.content || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('OpenAI returned malformed JSON for turn response, using fallback.');
+    }
 
     return {
       reply: parsed.reply || `Tell me about your implementation on Day ${context.currentDay.day}.`,
@@ -73,7 +78,12 @@ Covered: ${context.coveredDays.map(d => d.title).join(', ')}`;
     });
 
     const text = completion.choices[0]?.message?.content || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('OpenAI returned malformed JSON for feedback, using fallback.');
+    }
 
     return {
       summary: parsed.summary || 'Candidate completed technical interview.',

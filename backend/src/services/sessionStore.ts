@@ -19,6 +19,7 @@ class SessionStore {
         currentDayIndex: 0,
         questionCount: 0,
         isComplete: false,
+        isWindingDown: false,
         createdAt: Date.now(),
         lastUpdatedAt: Date.now()
       };

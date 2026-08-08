@@ -47,7 +47,12 @@ Format output as JSON:
 
     const response = await model.generateContent(prompt);
     const text = response.response.text() || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('Gemini returned malformed JSON for turn response, using fallback.');
+    }
 
     return {
       reply: parsed.reply || `Let's discuss Day ${context.currentDay.day}: ${context.currentDay.title}. What engineering choices did you make?`,
@@ -84,7 +89,12 @@ Return JSON with exact keys:
 
     const response = await model.generateContent(prompt);
     const text = response.response.text() || '{}';
-    const parsed = JSON.parse(text);
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.warn('Gemini returned malformed JSON for feedback, using fallback.');
+    }
 
     return {
       summary: parsed.summary || `${context.candidate.member.name} completed the interview.`,

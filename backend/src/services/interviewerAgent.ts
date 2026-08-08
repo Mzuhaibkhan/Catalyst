@@ -2,6 +2,8 @@ import { SessionState, InterviewResponse, CurriculumDay } from '../types';
 import { getCurriculumDayMap } from './candidatePlanner';
 import { llmRouter } from '../providers/llmRouter';
 
+const WIND_DOWN_MESSAGE = `Thank you for walking me through your technical work across the AI Cohort. You've given some excellent insights. Before we wrap up — is there anything else you'd like to highlight about your engineering approach or any projects you're particularly proud of?`;
+
 export async function processInterviewTurn(
   session: SessionState,
   candidateMessage?: string,
@@ -24,7 +26,28 @@ export async function processInterviewTurn(
   const isEligibleToFinish = session.questionCount >= 8 && session.coveredDays.size >= 4;
 
   if (isEligibleToFinish && candidateMessage) {
-    // Generate structured feedback
+    // Wind-down phase: give the candidate one closing turn before generating feedback
+    if (!session.isWindingDown) {
+      session.isWindingDown = true;
+      session.history.push({
+        turnId: session.history.length + 1,
+        speaker: 'interviewer',
+        text: WIND_DOWN_MESSAGE,
+        timestamp: new Date().toISOString()
+      });
+      return {
+        reply: WIND_DOWN_MESSAGE,
+        done: false,
+        metrics: {
+          latencyMs: 0,
+          provider: 'system',
+          coveredDaysCount: session.coveredDays.size,
+          questionCount: session.questionCount
+        }
+      };
+    }
+
+    // Generate structured feedback after wind-down
     const coveredDayObjects: CurriculumDay[] = Array.from(session.coveredDays)
       .map(d => dayMap.get(d))
       .filter((d): d is CurriculumDay => d !== undefined);
@@ -40,7 +63,7 @@ export async function processInterviewTurn(
     session.feedback = feedback;
 
     return {
-      reply: 'Interview completed. Thank you for walking through your technical journey in the AI Cohort!',
+      reply: `Excellent — thank you, ${session.candidate.member.name.split(' ')[0]}. Your interview is now complete. I've synthesized a comprehensive evaluation based on our conversation. You'll find your detailed feedback below.`,
       done: true,
       feedback: feedback
     };
@@ -59,8 +82,11 @@ export async function processInterviewTurn(
 
   session.coveredDays.add(targetDayNumber);
 
-  // Decide if this turn is a follow-up probe (e.g. if turn is odd and questionCount > 0)
-  const isFollowUp = session.questionCount > 0 && session.questionCount % 2 === 1;
+  // Adaptive follow-up logic based on last evaluation score
+  // Score <= 2: simplify & clarify, Score 3-4: deeper follow-up, Score 5: advance to next topic
+  const lastInterviewerTurn = [...session.history].reverse().find(t => t.speaker === 'interviewer' && t.evaluation);
+  const lastScore = lastInterviewerTurn?.evaluation?.score ?? 4;
+  const isFollowUp = session.questionCount > 0 && (lastScore <= 4 && session.questionCount % 2 === 1);
 
   // 4. Generate Interviewer response using Multi-LLM Router
   const turnResult = await llmRouter.generateTurn({
@@ -88,13 +114,17 @@ export async function processInterviewTurn(
     targetDay: targetDayNumber,
     evaluation: {
       score: turnResult.score,
-      notes: turnResult.provider
+      notes: turnResult.notes
     }
   });
 
   return {
     reply: turnResult.reply,
     done: false,
+    evaluation: {
+      score: turnResult.score,
+      notes: turnResult.notes
+    },
     metrics: {
       latencyMs: turnResult.latencyMs,
       provider: turnResult.provider,
