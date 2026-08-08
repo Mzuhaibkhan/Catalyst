@@ -70,7 +70,7 @@ export function useInterviewSession(selectedCandidate: CandidateProfile, activeP
       timestamp: new Date().toLocaleTimeString()
     };
 
-    setHistory(prev => [...prev, userMsg]);
+    setHistory((prev: TurnMessage[]) => [...prev, userMsg]);
 
     const payload = {
       sessionId,
@@ -99,7 +99,7 @@ export function useInterviewSession(selectedCandidate: CandidateProfile, activeP
         evaluation: res.evaluation
       };
 
-      setHistory(prev => [...prev, interviewerMsg]);
+      setHistory((prev: TurnMessage[]) => [...prev, interviewerMsg]);
 
       if (res.done && res.feedback) {
         setIsComplete(true);

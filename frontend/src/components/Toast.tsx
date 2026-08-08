@@ -23,16 +23,16 @@ export const ToastContainer: React.FC = () => {
 
   const addToast = useCallback((message: string, type: ToastType) => {
     const id = ++toastIdCounter;
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev: Toast[]) => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev: Toast[]) => prev.filter((t: Toast) => t.id !== id));
     }, 5000);
   }, []);
 
   globalAddToast = addToast;
 
   const removeToast = (id: number) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev: Toast[]) => prev.filter((t: Toast) => t.id !== id));
   };
 
   const getIcon = (type: ToastType) => {
@@ -45,7 +45,7 @@ export const ToastContainer: React.FC = () => {
 
   return (
     <div className="toast-container">
-      {toasts.map(toast => (
+      {toasts.map((toast: Toast) => (
         <div key={toast.id} className={`toast toast-${toast.type}`}>
           {getIcon(toast.type)}
           <span style={{ flex: 1 }}>{toast.message}</span>

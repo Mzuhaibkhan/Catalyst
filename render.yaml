@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ai-interview-agent
+    name: Catalyst
     env: node
     region: oregon
     plan: free
@@ -26,4 +26,6 @@ services:
       - key: GROK_API_KEY_1
         sync: false
       - key: NVIDIA_NIM_API_KEY_1
+        sync: false
+      - key: NVIDIA_NIM_API_KEY_2
         sync: false

@@ -35,7 +35,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   });
 
   // Generate data polygon
-  const dataPoints = values.map((v, i) => {
+  const dataPoints = values.map((v: number, i: number) => {
     const radius = (maxRadius * Math.min(v, 5)) / 5;
     const p = getPoint(i, radius);
     return `${p.x},${p.y}`;
@@ -81,7 +81,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
         />
 
         {/* Data points */}
-        {values.map((v, i) => {
+        {values.map((v: number, i: number) => {
           const radius = (maxRadius * Math.min(v, 5)) / 5;
           const p = getPoint(i, radius);
           return (
@@ -98,7 +98,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
         })}
 
         {/* Labels */}
-        {labels.map((label, i) => {
+        {labels.map((label: string, i: number) => {
           const p = getPoint(i, maxRadius + 24);
           const words = label.split(' ');
           return (
