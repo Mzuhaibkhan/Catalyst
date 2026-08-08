@@ -37,15 +37,15 @@ export const Header: React.FC<HeaderProps> = ({
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        
+
         {/* Left: Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button 
+          <button
             onClick={() => onViewChange('landing')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
           >
             <div className="juno-tag" style={{ background: 'var(--accent-1)', marginBottom: '0.2rem' }}>
-              <span>▶</span> JUNOWATTS.AI
+              <span>▶</span> PREPARE
             </div>
             <h1 className="juno-display-title" style={{ fontSize: '2.2rem', color: 'var(--base-300)', margin: 0 }}>
               AI INTERVIEWER
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Controls & Drawer Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          
+
           {/* Latency Gauge */}
           <div className="juno-tag" style={{ background: latencyMs !== null && latencyMs < 300 ? 'rgba(137, 197, 101, 0.2)' : 'var(--base-200)' }}>
             <Zap size={13} color="var(--base-300)" />
@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Drawer Menu Button */}
-          <button 
+          <button
             onClick={() => setMenuOpen(!menuOpen)}
             style={{
               background: 'var(--base-300)',
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="juno-tag" style={{ background: 'var(--accent-1)', color: 'var(--base-300)' }}>
               <span>▶</span> NAVIGATION MENU // JUNOWATTS
             </div>
-            <button 
+            <button
               onClick={() => setMenuOpen(false)}
               style={{ background: 'var(--base-100)', color: 'var(--base-300)', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', cursor: 'pointer', fontFamily: 'DM Mono', fontWeight: 'bold' }}
             >
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
           <nav style={{ maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <li>
-                <button 
+                <button
                   onClick={() => { onViewChange('landing'); setMenuOpen(false); }}
                   className="juno-display-title"
                   style={{ background: 'none', border: 'none', color: activeView === 'landing' ? 'var(--accent-1)' : 'var(--base-100)', fontSize: 'clamp(3rem, 7vw, 7rem)', cursor: 'pointer', textAlign: 'left' }}
@@ -193,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => { onViewChange('console'); setMenuOpen(false); }}
                   className="juno-display-title"
                   style={{ background: 'none', border: 'none', color: activeView === 'console' ? 'var(--accent-1)' : 'var(--base-100)', fontSize: 'clamp(3rem, 7vw, 7rem)', cursor: 'pointer', textAlign: 'left' }}
@@ -202,7 +202,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => { onOpenPrivacy(); setMenuOpen(false); }}
                   className="juno-display-title"
                   style={{ background: 'none', border: 'none', color: 'var(--accent-3)', fontSize: 'clamp(3rem, 7vw, 7rem)', cursor: 'pointer', textAlign: 'left' }}
