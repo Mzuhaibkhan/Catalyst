@@ -1,0 +1,108 @@
+:root {
+  --base-100: #0a0a0a;
+  --base-200: #141414;
+  --base-300: #1e1e1e;
+  --base-400: #2a2a2a;
+  --base-text: #f9f4eb;
+  --base-muted: #8e8a83;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --accent-1: #b1c1ef; /* Blue */
+  --accent-2: #f2acac; /* Coral */
+  --accent-3: #ffdd94; /* Gold */
+  --accent-green: #a3e635; /* Neon Green */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--base-100);
+  color: var(--base-text);
+  font-family: "Host Grotesk", sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02rem;
+  line-height: 0.9;
+}
+
+h1 { font-size: 3.5rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 1.8rem; }
+h4 { font-size: 1.4rem; }
+
+.mono {
+  font-family: "DM Mono", monospace;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--base-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--base-400);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--base-muted);
+}
+
+/* Audio Wave Visualizer Animation */
+.audio-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+}
+.audio-bar {
+  width: 3px;
+  background-color: var(--accent-1);
+  border-radius: 2px;
+  animation: wave 1.2s ease-in-out infinite;
+}
+.audio-bar:nth-child(1) { animation-delay: 0.1s; height: 40%; }
+.audio-bar:nth-child(2) { animation-delay: 0.3s; height: 80%; }
+.audio-bar:nth-child(3) { animation-delay: 0.2s; height: 100%; }
+.audio-bar:nth-child(4) { animation-delay: 0.4s; height: 60%; }
+.audio-bar:nth-child(5) { animation-delay: 0.5s; height: 90%; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+/* Glassmorphic Panel */
+.glass-panel {
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+}
+
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  font-family: "DM Mono", monospace;
+  font-size: 0.75rem;
+}

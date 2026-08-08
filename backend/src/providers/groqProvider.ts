@@ -1,0 +1,113 @@
+import { ILLMProvider, CandidateProfile, DialogueTurn, CurriculumDay, InterviewFeedback } from '../types';
+import Groq from 'groq-sdk';
+
+export class GroqProvider implements ILLMProvider {
+  public name = 'Groq (Llama-3.3-70B)';
+  private client: Groq | null = null;
+
+  constructor() {
+    if (process.env.GROQ_API_KEY) {
+      this.client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    }
+  }
+
+  public isAvailable(): boolean {
+    return !!this.client;
+  }
+
+  public async generateTurnResponse(context: {
+    candidate: CandidateProfile;
+    history: DialogueTurn[];
+    currentDay: CurriculumDay;
+    questionCount: number;
+    isFollowUp: boolean;
+  }): Promise<{ reply: string; score: number; notes: string }> {
+    if (!this.client) throw new Error('Groq client not initialized');
+
+    const prompt = `You are a top-tier technical interviewer conducting a multi-turn engineering interview for ${context.candidate.member.name} (${context.candidate.member.jobRole}, ${context.candidate.member.yearsExperience} yrs exp).
+
+Curriculum Topic: Day ${context.currentDay.day} - ${context.currentDay.title}
+Objectives: ${context.currentDay.objectives.join('; ')}
+Tools: ${context.currentDay.tools.join(', ')}
+Turn Count: ${context.questionCount}
+Is Follow-up Probe: ${context.isFollowUp}
+
+Conversation History:
+${context.history.map(t => `${t.speaker.toUpperCase()}: ${t.text}`).join('\n')}
+
+Rules:
+1. Speak naturally as a senior engineering interviewer.
+2. Ask 1 focused technical question or follow-up probe.
+3. Keep response concise (2-4 sentences max).
+
+Return JSON format:
+{
+  "reply": "Your interviewer response text",
+  "score": 4,
+  "notes": "Brief notes on candidate performance"
+}`;
+
+    const completion = await this.client.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'You are an AI Technical Interviewer. Output valid JSON only.' },
+        { role: 'user', content: prompt }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    const text = completion.choices[0]?.message?.content || '{}';
+    const parsed = JSON.parse(text);
+
+    return {
+      reply: parsed.reply || `Could you detail your technical decisions on Day ${context.currentDay.day}?`,
+      score: parsed.score || 4,
+      notes: parsed.notes || 'Groq response generated.'
+    };
+  }
+
+  public async generateFeedback(context: {
+    candidate: CandidateProfile;
+    history: DialogueTurn[];
+    coveredDays: CurriculumDay[];
+  }): Promise<InterviewFeedback> {
+    if (!this.client) throw new Error('Groq client not initialized');
+
+    const prompt = `Generate final interview feedback for candidate ${context.candidate.member.name}.
+Covered Days: ${context.coveredDays.map(d => `Day ${d.day}: ${d.title}`).join(', ')}
+
+Interview History:
+${context.history.map(t => `${t.speaker.toUpperCase()}: ${t.text}`).join('\n')}
+
+Return JSON with exact keys:
+{
+  "summary": "Concise executive overview string",
+  "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+  "gaps": ["Gap 1", "Gap 2"],
+  "next": ["Action 1", "Action 2"]
+}`;
+
+    const completion = await this.client.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'Return valid JSON only matching the schema.' },
+        { role: 'user', content: prompt }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+      temperature: 0.5,
+      max_tokens: 600
+    });
+
+    const text = completion.choices[0]?.message?.content || '{}';
+    const parsed = JSON.parse(text);
+
+    return {
+      summary: parsed.summary || `${context.candidate.member.name} completed the technical interview.`,
+      strengths: parsed.strengths || ['Good overall understanding of cohort topics'],
+      gaps: parsed.gaps || ['Could expand on advanced optimization metrics'],
+      next: parsed.next || ['Review deployment strategies']
+    };
+  }
+}
