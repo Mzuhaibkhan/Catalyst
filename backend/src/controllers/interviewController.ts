@@ -45,7 +45,7 @@ export async function handleInterviewRequest(req: Request, res: Response): Promi
     const { sessionId, candidate, message, provider } = parseResult.data;
 
     // 1. Start Interview or Retrieve Existing Session
-    let session = sessionStore.getSession(sessionId);
+    let session = await sessionStore.getSession(sessionId);
 
     if (!session) {
       if (!candidate) {
@@ -54,14 +54,14 @@ export async function handleInterviewRequest(req: Request, res: Response): Promi
         });
         return;
       }
-      session = sessionStore.getOrCreateSession(sessionId, candidate);
+      session = await sessionStore.getOrCreateSession(sessionId, candidate);
     }
 
     // 2. Process Turn or Complete Session
     const turnResponse = await processInterviewTurn(session, message, provider);
 
     // Update Session Store state
-    sessionStore.updateSession(session);
+    await sessionStore.updateSession(session);
 
     // 3. Return JSON response strictly compliant with technical specification
     res.json(turnResponse);
@@ -80,7 +80,7 @@ export async function handleInterviewRequest(req: Request, res: Response): Promi
   }
 }
 
-export function handleHealthCheck(req: Request, res: Response): void {
+export async function handleHealthCheck(req: Request, res: Response): Promise<void> {
   const providerDetails = llmRouter.getProviderDetails();
   res.json({
     status: 'ok',
@@ -88,7 +88,7 @@ export function handleHealthCheck(req: Request, res: Response): void {
     availableProviders: llmRouter.getAvailableProviders(),
     providerDetails,
     sessions: {
-      active: sessionStore.getSessionCount(),
+      active: await sessionStore.getSessionCount(),
     }
   });
 }

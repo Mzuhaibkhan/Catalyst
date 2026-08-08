@@ -9,10 +9,12 @@ import { FeedbackDashboard } from './components/FeedbackDashboard';
 import { ApiDebugger } from './components/ApiDebugger';
 import { ToastContainer, showToast } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { sendInterviewRequest, checkBackendHealth, abortCurrentRequest, CandidateProfile, InterviewFeedback } from './services/api';
 import candidatesData from '../../candidates.json';
 
 const AppContent: React.FC = () => {
+  useSmoothScroll();
   const allCandidates = candidatesData.candidates as CandidateProfile[];
   const [activeView, setActiveView] = useState<'landing' | 'console'>('landing');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);

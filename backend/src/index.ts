@@ -55,7 +55,6 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown
 function gracefulShutdown() {
   console.log('\nReceived shutdown signal, initiating graceful shutdown...');
-  sessionStore.stopCleanupTimer();
   server.close(() => {
     console.log('HTTP server closed.');
     process.exit(0);

@@ -1,35 +1,34 @@
-import { SessionState, CandidateProfile } from '../types';
+import { SessionState, CandidateProfile, DialogueTurn } from '../types';
 import { planCandidateInterview } from './candidatePlanner';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 class SessionStore {
-  private sessions = new Map<string, SessionState>();
-  private cleanupTimer: NodeJS.Timeout | null = null;
-  private MAX_SESSIONS = Number(process.env.MAX_SESSIONS) || 100;
-  private SESSION_TTL_MS = (Number(process.env.SESSION_TTL_HOURS) || 2) * 60 * 60 * 1000;
-
-  public getOrCreateSession(sessionId: string, candidate?: CandidateProfile): SessionState {
-    let session = this.sessions.get(sessionId);
+  
+  public async getOrCreateSession(sessionId: string, candidate?: CandidateProfile): Promise<SessionState> {
+    let session = await this.getSession(sessionId);
 
     if (!session && candidate) {
-      if (this.sessions.size >= this.MAX_SESSIONS) {
-        throw new Error(`Maximum concurrent sessions (${this.MAX_SESSIONS}) reached.`);
-      }
       const { targetDays } = planCandidateInterview(candidate);
-      session = {
-        sessionId,
-        candidate,
-        history: [],
-        askedQuestions: [],
-        coveredDays: new Set<number>(),
-        targetDays,
-        currentDayIndex: 0,
-        questionCount: 0,
-        isComplete: false,
-        isWindingDown: false,
-        createdAt: Date.now(),
-        lastUpdatedAt: Date.now()
-      };
-      this.sessions.set(sessionId, session);
+      
+      const newSession = await prisma.session.create({
+        data: {
+          id: sessionId,
+          candidateId: candidate.member.id,
+          askedQuestions: '[]',
+          coveredDays: '[]',
+          targetDays: JSON.stringify(targetDays),
+          currentDayIndex: 0,
+          questionCount: 0,
+          isComplete: false,
+          isWindingDown: false,
+        },
+        include: {
+          candidate: { include: { signals: true, missions: true } }
+        }
+      });
+      session = this.mapPrismaToState(newSession, []);
     } else if (!session && !candidate) {
       throw new Error(`Session ${sessionId} not found and no candidate profile provided to initialize.`);
     }
@@ -37,47 +36,97 @@ class SessionStore {
     return session!;
   }
 
-  public getSession(sessionId: string): SessionState | undefined {
-    return this.sessions.get(sessionId);
-  }
-
-  public updateSession(session: SessionState): void {
-    session.lastUpdatedAt = Date.now();
-    this.sessions.set(session.sessionId, session);
-  }
-
-  public clearSession(sessionId: string): void {
-    this.sessions.delete(sessionId);
-  }
-
-  public getSessionCount(): number {
-    return this.sessions.size;
-  }
-
-  public startCleanupTimer(): void {
-    if (this.cleanupTimer) return;
-    this.cleanupTimer = setInterval(() => {
-      const now = Date.now();
-      let evictedCount = 0;
-      for (const [id, session] of this.sessions.entries()) {
-        if (now - session.lastUpdatedAt > this.SESSION_TTL_MS) {
-          this.sessions.delete(id);
-          evictedCount++;
-        }
+  public async getSession(sessionId: string): Promise<SessionState | undefined> {
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: {
+        candidate: { include: { signals: true, missions: true } },
+        history: { orderBy: { turnId: 'asc' } }
       }
-      if (evictedCount > 0) {
-        console.info(`[SessionStore] Evicted ${evictedCount} stale session(s).`);
-      }
-    }, 30 * 60 * 1000);
+    });
+
+    if (!session) return undefined;
+    return this.mapPrismaToState(session, session.history);
   }
 
-  public stopCleanupTimer(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = null;
+  public async updateSession(session: SessionState): Promise<void> {
+    await prisma.session.update({
+      where: { id: session.sessionId },
+      data: {
+        askedQuestions: JSON.stringify(session.askedQuestions),
+        coveredDays: JSON.stringify(Array.from(session.coveredDays)),
+        currentDayIndex: session.currentDayIndex,
+        questionCount: session.questionCount,
+        isComplete: session.isComplete,
+        isWindingDown: session.isWindingDown,
+        feedback: session.feedback ? JSON.stringify(session.feedback) : null,
+      }
+    });
+
+    // Save history turns
+    // We only need to insert turns that don't already exist in the DB
+    // The easiest way is to check the count and insert the difference, 
+    // since turns are only appended.
+    const dbTurnsCount = await prisma.dialogueTurn.count({
+      where: { sessionId: session.sessionId }
+    });
+
+    if (session.history.length > dbTurnsCount) {
+      const newTurns = session.history.slice(dbTurnsCount);
+      await prisma.dialogueTurn.createMany({
+        data: newTurns.map(t => ({
+          sessionId: session.sessionId,
+          turnId: t.turnId,
+          speaker: t.speaker,
+          text: t.text,
+          timestamp: new Date(t.timestamp),
+          targetDay: t.targetDay,
+          score: t.evaluation?.score,
+          notes: t.evaluation?.notes
+        }))
+      });
     }
+  }
+
+  public async getSessionCount(): Promise<number> {
+    return prisma.session.count();
+  }
+
+  private mapPrismaToState(prismaSession: any, history: any[]): SessionState {
+    return {
+      sessionId: prismaSession.id,
+      candidate: {
+        member: {
+          id: prismaSession.candidate.id,
+          name: prismaSession.candidate.name,
+          jobRole: prismaSession.candidate.jobRole,
+          yearsExperience: prismaSession.candidate.yearsExperience,
+          education: prismaSession.candidate.education,
+          status: prismaSession.candidate.status,
+        },
+        missions: prismaSession.candidate.missions,
+        signals: prismaSession.candidate.signals,
+      },
+      history: history.map(t => ({
+        turnId: t.turnId,
+        speaker: t.speaker as 'interviewer' | 'candidate',
+        text: t.text,
+        timestamp: t.timestamp.toISOString(),
+        targetDay: t.targetDay || undefined,
+        evaluation: t.score ? { score: t.score, notes: t.notes || '' } : undefined,
+      })),
+      askedQuestions: JSON.parse(prismaSession.askedQuestions || '[]'),
+      coveredDays: new Set(JSON.parse(prismaSession.coveredDays || '[]')),
+      targetDays: JSON.parse(prismaSession.targetDays || '[]'),
+      currentDayIndex: prismaSession.currentDayIndex,
+      questionCount: prismaSession.questionCount,
+      isComplete: prismaSession.isComplete,
+      isWindingDown: prismaSession.isWindingDown,
+      feedback: prismaSession.feedback ? JSON.parse(prismaSession.feedback) : undefined,
+      createdAt: prismaSession.createdAt.getTime(),
+      lastUpdatedAt: prismaSession.lastUpdatedAt.getTime()
+    };
   }
 }
 
 export const sessionStore = new SessionStore();
-sessionStore.startCleanupTimer();

@@ -32,12 +32,17 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
 }) => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (history.length > 0 && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [history, isLoading]);
 
   // Auto-resize textarea
@@ -185,7 +190,7 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
       </div>
 
       {/* Chat Messages Stream */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingRight: '0.5rem' }}>
+      <div ref={chatContainerRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingRight: '0.5rem' }}>
         {!isStarted ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1.5rem', textAlign: 'center', padding: '2rem' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(177, 193, 239, 0.1)', border: '1px solid var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -312,7 +317,6 @@ export const InterviewCanvas: React.FC<InterviewCanvasProps> = ({
             )}
           </>
         )}
-        <div ref={chatEndRef} />
       </div>
 
       {/* Input Box */}

@@ -1,0 +1,70 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Candidate {
+  id              String             @id
+  name            String
+  jobRole         String
+  yearsExperience Int
+  education       String
+  status          String
+  signals         CandidateSignals?
+  missions        CandidateMission[]
+  sessions        Session[]
+}
+
+model CandidateSignals {
+  id                Int       @id @default(autoincrement())
+  commitDays        Int
+  missionsCompleted Int
+  missionsFirstTry  Int
+  candidateId       String    @unique
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model CandidateMission {
+  id          Int       @id @default(autoincrement())
+  day         Int
+  title       String
+  passed      Boolean?
+  attempts    Int?
+  skipped     Boolean?
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id              String          @id // Maps to sessionId
+  candidateId     String
+  candidate       Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  history         DialogueTurn[]
+  askedQuestions  String          // Stored as JSON string
+  coveredDays     String          // Stored as JSON string
+  targetDays      String          // Stored as JSON string
+  currentDayIndex Int             @default(0)
+  questionCount   Int             @default(0)
+  isComplete      Boolean         @default(false)
+  isWindingDown   Boolean         @default(false)
+  feedback        String?         // Stored as JSON string (InterviewFeedback)
+  createdAt       DateTime        @default(now())
+  lastUpdatedAt   DateTime        @updatedAt
+}
+
+model DialogueTurn {
+  id         Int      @id @default(autoincrement())
+  turnId     Int
+  speaker    String   // 'interviewer' or 'candidate'
+  text       String
+  timestamp  DateTime
+  targetDay  Int?
+  score      Int?
+  notes      String?
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}

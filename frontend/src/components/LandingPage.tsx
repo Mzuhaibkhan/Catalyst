@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Shield, Cpu, Zap, Activity, ArrowRight, CheckCircle2, Layers, Sparkles, Terminal, Code2 } from 'lucide-react';
+import gsap from 'gsap';
 import candidatesData from '../../../candidates.json';
 
 interface LandingPageProps {
@@ -11,16 +12,28 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpenPrivacy, serverStatus }) => {
   const candidates = candidatesData.candidates || [];
   const [activeCardHover, setActiveCardHover] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const targets = containerRef.current.querySelectorAll('.gsap-reveal');
+      gsap.fromTo(
+        targets,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, stagger: 0.12, ease: 'power3.out' }
+      );
+    }
+  }, []);
 
   return (
-    <div style={{ color: 'var(--base-300)', paddingBottom: '3rem' }}>
+    <div ref={containerRef} style={{ color: 'var(--base-300)', paddingBottom: '3rem' }}>
 
       {/* 1. HERO SECTION */}
       <section style={{ paddingTop: '2rem', paddingBottom: '4rem', borderBottom: '2px solid var(--base-300)' }}>
         <div className="juno-container">
 
           {/* Top Symbol & Alchemy Badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="gsap-reveal" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
             <div className="juno-tag" style={{ background: 'var(--accent-1)' }}>
               <span>▶</span> AI INTERVIEW ENGINE
             </div>
@@ -34,12 +47,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartConsole, onOpen
           </div>
 
           {/* Huge Display Headline */}
-          <h1 className="juno-display-title" style={{ fontSize: 'clamp(4rem, 11vw, 11rem)', marginBottom: '1.5rem', color: 'var(--base-300)' }}>
-            INTERFACE ALCHEMY
+          <h1 className="juno-display-title gsap-reveal" style={{ fontSize: 'clamp(4rem, 11vw, 11rem)', marginBottom: '1.5rem', color: 'var(--base-300)' }}>
+            INTERVIEW ALCHEMY
           </h1>
 
           {/* Subtitle Copy & Hero Actions */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'end', marginBottom: '3.5rem' }}>
+          <div className="gsap-reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'end', marginBottom: '3.5rem' }}>
             <div>
               <p className="juno-mono" style={{ color: 'var(--base-muted)', marginBottom: '0.5rem' }}>
                 <span>▶</span> ZERO FILLER EPISODES // AUTOMATED TECHNICAL EVALUATION
