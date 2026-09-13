@@ -5,7 +5,6 @@ dist
 .gitignore
 .env
 .env.local
-README.md
 .vscode
 .idea
 *.db

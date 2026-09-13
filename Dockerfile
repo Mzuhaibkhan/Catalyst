@@ -45,8 +45,6 @@ ENV DATABASE_URL=file:/app/backend/prisma/dev.db
 # Copy root dataset files
 COPY candidates.json ./candidates.json
 COPY curriculum.json ./curriculum.json
-COPY technical-spec.md ./technical-spec.md
-COPY README.md ./README.md
 
 # Copy backend source & dependencies
 COPY backend/package*.json ./backend/
